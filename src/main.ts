@@ -54,6 +54,8 @@ let run: LevelRun | null = null;
 let scene = new THREE.Scene();
 let world: View | null = null;
 let sky: SkyView | null = null;
+/** The world whose sky and air are shown: the body Nuri last landed on (worlds-within-a-level, e.g. L7 chunks, L18). */
+let skyWorld = '';
 let nuri: NuriView | null = null;
 let fx: Fx | null = null;
 let map: MapView | null = null;
@@ -126,6 +128,7 @@ function buildLevelScene(): void {
   if (!run) return;
   const look = lookFor(run.def.worldId);
   sky = buildSky(run.parts, run.def.worldId, scene);
+  skyWorld = run.def.worldId;
   scene.add(new THREE.HemisphereLight(look.rim, look.ambient, 1.1));
   scene.add(new THREE.AmbientLight('#ffffff', 0.35));
   camFill = new THREE.DirectionalLight('#dfe8ff', 0.75);
@@ -408,6 +411,17 @@ function stepFrame(dt: number): void {
   nuri?.update(run.sim.player, dt, run.meter, run.status === 'won');
   world?.update(run, dt, camera);
   fx?.update(dt);
+  // once a flight has left the shown world's pull, show the level's own sky (no Venus fog filling the frame mid-hop)
+  const pl = run.sim.player;
+  const near = currentWorld(run);
+  const here = pl.grounded ? near : near !== skyWorld && pl.airTime > 0.8 ? run.def.worldId : skyWorld;
+  if (sky && here !== skyWorld && WORLDS[here]) {
+    // landed on another world: its own sky, Sun size and air (the evidence the identify levels ask you to read)
+    sky.dispose();
+    sky = buildSky(run.parts, here, scene);
+    skyWorld = here;
+    setAir(WORLDS[here].air);
+  }
   sky?.follow(camera, rig.up, tv(run.sim.player.pos));
   if (camFill) { camFill.position.copy(camera.position).addScaledVector(rig.up, 4); camFill.target.position.copy(tv(run.sim.player.pos)); }
   hud?.update(run, dt);

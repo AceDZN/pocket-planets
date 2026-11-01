@@ -97,7 +97,7 @@ function skyBody(kind: string, sizeDeg: number): THREE.Object3D {
   return g;
 }
 
-export interface SkyView { group: THREE.Group; sun: THREE.DirectionalLight; follow(cam: THREE.Camera, up: THREE.Vector3, focus: THREE.Vector3): void; sunDir: THREE.Vector3 }
+export interface SkyView { group: THREE.Group; sun: THREE.DirectionalLight; follow(cam: THREE.Camera, up: THREE.Vector3, focus: THREE.Vector3): void; sunDir: THREE.Vector3; dispose(): void }
 
 export function buildSky(parts: LevelParts, worldId: string, scene: THREE.Scene): SkyView {
   const w = WORLDS[worldId];
@@ -149,6 +149,11 @@ export function buildSky(parts: LevelParts, worldId: string, scene: THREE.Scene)
       (dome.material as THREE.ShaderMaterial).uniforms.up.value.copy(up);
       light.position.copy(focus).addScaledVector(sunDir, 50);
       light.target.position.copy(focus);
+    },
+    dispose() {
+      scene.remove(group, light, light.target);
+      light.shadow.map?.dispose();
+      light.dispose();
     },
   };
 }
