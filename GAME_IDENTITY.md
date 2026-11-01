@@ -65,4 +65,12 @@ Saturated toy-diorama planets with a strong rim light, each world with its own s
 
 ## Replay
 
-After the campaign, **daily comet runs** (ריצת השביט היומית): a seeded, solver-verified remix of three unlabeled worlds, each ending at a "which world was this?" launch-pad choice.
+**Daily comet runs (השביט היומי)**, open from the title and the map at any time: three authored worlds picked by the
+date, so a whole class shares one run. The world's name and the jump number are hidden, and the name is scrubbed
+from the objective and hints. After each page the player names the world from three options; every distractor differs
+in something you can feel (jump height, the Sun's size, or air). A wrong pick gets Shvitton's comic explanation of what
+that world would have felt like, and the player picks again. Score: first-try guesses + star crumbs, out of 12, with a
+day streak. The routes are the authored levels' routes, so every daily run is solver-verified. Daily runs save no atlas
+pages and post nothing to the Workbook host.
+
+Also: three star crumbs per level for a full ★★★, and the atlas to reread every page.
