@@ -88,6 +88,8 @@ function setOverlay(e: HTMLElement | null): void {
 }
 
 function clearScene(): void {
+  introEl?.remove();
+  introEl = null;
   world?.dispose();
   scene = new THREE.Scene();
   world = null; sky = null; nuri = null; fx = null;

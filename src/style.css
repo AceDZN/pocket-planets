@@ -138,11 +138,44 @@ body { font-family: Rubik, system-ui, sans-serif; color: var(--ink); -webkit-use
   .counter { min-width: 0; }
   .ls-info { bottom: 120px; }
 }
-@media (prefers-reduced-motion: reduce) { .banner .t, .toast, .star.pop { animation: none; } }
-.reduced .banner .t, .reduced .toast, .reduced .star.pop { animation: none !important; }
-
 /* daily comet */
 .ls-daily { position: absolute; bottom: 124px; right: 18px; padding: 8px 14px; border-radius: 999px; font: inherit; font-weight: 800; font-size: 15px; color: #fff; cursor: pointer; }
 .guess { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
 .guess .tried { opacity: 0.45; text-decoration: line-through; }
 .daily-score { font-size: clamp(26px, 3cqmin + 12px, 44px); font-weight: 900; color: var(--gold); }
+
+/* landscape phones (about 390 px tall): everything shrinks so the world stays visible */
+@container (max-height: 470px) {
+  .round { width: 40px; height: 40px; }
+  .round svg { width: 20px; height: 20px; }
+  .hud-tl { top: 8px; left: 8px; }
+  .gauges { top: 56px; left: 8px; transform: scale(0.6); transform-origin: top left; }
+  .titlecard { min-width: 0; padding: 6px 10px; }
+  .titlecard h2 { font-size: 15px; }
+  .titlecard { top: 8px; right: 8px; }
+  .hud-tr2 { top: 78px; right: 8px; transform: scale(0.8); transform-origin: top right; }
+  .intro, .is-touch .intro { bottom: auto; top: 8px; width: min(52%, 520px); padding: 8px 12px; font-size: 13px; line-height: 1.35; }
+  .objective, .is-touch .objective { bottom: 8px; left: 38%; padding: 6px 14px; font-size: 13px; max-width: 46%; }
+  .touch { bottom: 10px; right: 10px; gap: 8px; }
+  .touch .tb { width: 58px; height: 58px; font-size: 24px; }
+  .touch .tb.big { width: 72px; height: 72px; font-size: 28px; }
+  .ls-top { top: 8px; left: 8px; right: 8px; gap: 6px; }
+  .tabs { gap: 6px; }
+  .tab { min-width: 0; padding: 4px 8px; font-size: 12px; gap: 6px; }
+  .tab .dot { width: 14px; height: 14px; }
+  .counter { min-width: 0; padding: 4px 10px; }
+  .counter .k { font-size: 11px; }
+  .counter .v { font-size: 16px; }
+  .nlabel { font-size: 12px; padding: 1px 6px 2px; border-radius: 8px; }
+  .nlabel .ms { font-size: 9px; }
+  .ls-play { bottom: 10px; left: 10px; font-size: 20px; }
+  .ls-atlas { bottom: 10px; right: 10px; width: 62px; height: 62px; font-size: 12px; }
+  .ls-atlas .book { font-size: 22px; }
+  .ls-daily { bottom: 80px; right: 10px; font-size: 12px; padding: 5px 10px; }
+  .ls-info { bottom: 10px; min-width: 0; padding: 6px 12px; font-size: 12px; }
+  .wincard, .panel { padding: 12px 16px; gap: 8px; }
+  .fact { padding: 8px 12px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .banner .t, .toast, .star.pop { animation: none; } }
+.reduced .banner .t, .reduced .toast, .reduced .star.pop { animation: none !important; }
+
