@@ -134,6 +134,7 @@ export function buildMap(levels: LevelDef[]): MapView {
       const p = nodes[cur - 1];
       marker.position.set(p.x, p.y + 1.15 + Math.abs(Math.sin(t * 3)) * 0.25, p.z);
       marker.rotation.y = Math.sin(t) * 0.4;
+      marker.userData.mixer?.update(dt);
       comet.position.y = 7.5 + Math.sin(t * 1.3) * 0.4;
       comet.position.x = camera.position.x - 6 + Math.sin(t * 0.4) * 2;
       comet.userData.tick?.(t, dt);

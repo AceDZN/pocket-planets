@@ -1,0 +1,206 @@
+{
+  "_readme": "All GLBs are Y-up with the base at y=0. Tripo normalises the largest extent to 1.0 (see bindBBox). Scale = heightM / bindHeight. The only required extension is EXT_texture_webp, so plain THREE.GLTFLoader works with no meshopt or draco decoder. KHR_materials_volume is listed as used but no material uses it, so ignore it. Each file is a single opaque PBR material with webp 1024 textures. Tripo meshes are characters and dressing only, never colliders or gameplay state. Planets, rings, gravity, the Sun and the gauges are procedural. Provenance is in /ASSETS.md. heightM values are suggestions for a planetoid toy scale where Nuri is about 1.1 m; tune them in the scene.",
+  "nuri": {
+    "file": "nuri.glb",
+    "heightM": 1.1,
+    "bindHeight": 1.0,
+    "forward": "+Z",
+    "rigged": true,
+    "skeleton": "Mixamo humanoid, 65 joints mixamorig:*, root node Armature (Hips at y 0.326, Head at y 0.604, HeadTop_End at y 0.725 in bind units)",
+    "clips": {
+      "idle": "idle",
+      "run": "run",
+      "jump": "jump",
+      "fall": "fall",
+      "land": "land",
+      "cheer": "cheer",
+      "shiver": "shiver",
+      "overheat": "overheat",
+      "pound": "pound",
+      "scared": "scared",
+      "jumpDown": "jump_down"
+    },
+    "clipSeconds": {
+      "idle": 15.33,
+      "run": 1.25,
+      "jump": 2.21,
+      "fall": 3.0,
+      "land": 0.9,
+      "cheer": 12.08,
+      "shiver": 2.96,
+      "overheat": 2.96,
+      "pound": 1.55,
+      "scared": 3.38,
+      "jump_down": 3.71
+    },
+    "bindBBox": {
+      "min": [
+        -0.433,
+        0,
+        -0.244
+      ],
+      "max": [
+        0.433,
+        1.0,
+        0.244
+      ]
+    },
+    "bones": {
+      "hips": "mixamorig:Hips",
+      "head": "mixamorig:Head",
+      "spine": "mixamorig:Spine2",
+      "leftHand": "mixamorig:LeftHand",
+      "rightHand": "mixamorig:RightHand",
+      "leftFoot": "mixamorig:LeftFoot",
+      "rightFoot": "mixamorig:RightFoot"
+    },
+    "notes": "T-pose bind (x span = arms). All clips are stay-in-place. The physics arc is in code, never in the clip. 'run' had a baked +0.32 forward Hips Z offset (and -0.018 X); its Hips X/Z keys are now set to the bind value (0.002, 0.033). 'jump' is Tripo's preset: about five small in-place hops of roughly 0.42 s each (Hips y 0.31 to 0.44). For a single take-off play 0 to 0.25 s, then hold the frame at t=0.2 while airborne (LoopOnce + clampWhenFinished, or timeScale 0). 'pound' (1.55 s) and 'land' (0.90 s) are subclips baked from 'jump_down' (t 1.50 to 3.05 and 2.15 to 3.05). 'pound' rises, slams into a deep squat at about 0.88 s (Hips y down to 0.14) and stands back up; cue the impact shake and dust at 0.88 s. 'land' starts mid-drop, hits the deepest squat at about 0.23 s and recovers. Their Hips Y is absolute (starts above bind), so leave the root alone and let the squash read. 'fall' is a trip and fall that ends lying on the back (Hips y 0.10 from about 1.6 s). For the long safe fall into a gas giant, loop 'scared' (arms up, flailing) and spin the whole model procedurally, or play 'fall' once with clamp for a pratfall on the ground. 'shiver' (Tripo AI animation: arms hugging the chest, shaking, knees knocking, stomps) and 'overheat' (AI: hopping foot to foot, fanning the face, wiping the brow) both loop. 'cheer' and 'idle' are long, so crossfade out early. The helmet is a painted, opaque bubble: the face and hair are baked into the texture behind a lilac tint. For a real glass look, parent a slightly larger transparent sphere (MeshPhysicalMaterial, transmission or opacity 0.25, strong rim) to mixamorig:Head, centred about 0.09 bind units above the Head joint. Backpack jet: the mesh has a white pack on the back (-Z). Spawn the puff particles about 0.45 bind units up at z -0.2."
+  },
+  "comet": {
+    "file": "comet.glb",
+    "heightM": 1.6,
+    "bindHeight": 0.821,
+    "forward": "+Z",
+    "rigged": false,
+    "clips": {},
+    "bindBBox": {
+      "min": [
+        -0.5,
+        0,
+        -0.363
+      ],
+      "max": [
+        0.5,
+        0.821,
+        0.363
+      ]
+    },
+    "notes": "שביטון. A lumpy grey-purple rock ball with pale-blue ice chunks, big googly eyes with eyelashes, and a wide open grin with a red tongue facing +Z. The icy blue tail sweeps out sideways and down along X (the side is not checked), so the X extent includes the tail. No rig: wobble it procedurally with scale squash, bob and yaw jitter. Eyes are part of the mesh; for blinks, add two small procedural eyelid discs in front of the eyes. Base sits at y=0 at the bottom of the tail and ball. Re-centre the pivot on the ball if you spin it (ball centre roughly 0.45 bind units up, offset along X away from the tail; check in scene)."
+  },
+  "launch_pad": {
+    "file": "launch_pad.glb",
+    "heightM": 0.5,
+    "bindHeight": 0.26,
+    "forward": "+Z",
+    "rigged": false,
+    "clips": {},
+    "bindBBox": {
+      "min": [
+        -0.445,
+        0,
+        -0.5
+      ],
+      "max": [
+        0.445,
+        0.26,
+        0.5
+      ]
+    },
+    "notes": "A low, round toy pad: white top deck with a raised yellow-rimmed hatch in the centre, a glowing cyan light strip around the rim and a navy-blue skirt. Slightly oval (z 1.0 vs x 0.89). At heightM 0.5 it is about 1.9 m across. The light ring is painted in the texture, so add a procedural emissive torus and the vertical light column seen in mockup 05. Tint the column per destination world; the mesh can stay the same for all pads. The step and stand-on zone is the top deck at y about 0.2 bind."
+  },
+  "satellite": {
+    "file": "satellite.glb",
+    "heightM": 2.5,
+    "bindHeight": 0.888,
+    "forward": "+Z",
+    "rigged": false,
+    "clips": {},
+    "bindBBox": {
+      "min": [
+        -0.5,
+        0,
+        -0.259
+      ],
+      "max": [
+        0.5,
+        0.888,
+        0.259
+      ]
+    },
+    "notes": "A cute weather satellite: white and orange rounded body, a big round camera eye (blue lens) facing +Z, a dish antenna on top, two square blue solar-panel wings on arms along X, small orange feet or thrusters at the bottom, and gold trim. Reads as friendly, almost a character. Use it for the weather satellite in level 15; for 'broken' states, rotate a panel or hide it and add sparks. No GPS or communication variant: the 8-generation budget was spent. Tint the body (orange to teal) and hide the dish if you need a second satellite."
+  },
+  "rover": {
+    "file": "rover.glb",
+    "heightM": 1.6,
+    "bindHeight": 0.994,
+    "forward": "+X",
+    "rigged": false,
+    "clips": {},
+    "bindBBox": {
+      "min": [
+        -0.5,
+        0,
+        -0.371
+      ],
+      "max": [
+        0.5,
+        0.994,
+        0.371
+      ]
+    },
+    "notes": "A toy Mars rover: white body with orange trim, a solar-panel deck, a tall orange mast with a yellow two-lens camera head, a small folded arm on the side, and 4 big chunky orange wheels (asked for 6, got 4). The long axis is X, so it drives along ±X. Check in the scene which end is the front (the mast leans toward the front). Wheels are part of the single mesh, so there is no wheel rotation; slide it with a small bob, or add procedural wheel discs. Mars set dressing for level 4 and as a carry/landmark prop."
+  },
+  "seed_pod": {
+    "file": "seed_pod.glb",
+    "heightM": 0.45,
+    "bindHeight": 1.0,
+    "forward": "+Z",
+    "rigged": false,
+    "clips": {},
+    "bindBBox": {
+      "min": [
+        -0.311,
+        0,
+        -0.312
+      ],
+      "max": [
+        0.311,
+        1.0,
+        0.312
+      ]
+    },
+    "notes": "A carryable seed pod: a translucent-looking mint-green glass cylinder (painted, opaque) with a green two-leaf sprout in brown soil, a white domed cap with an orange top button, and a yellow-orange base with green feet. For wilt and bloom states, scale the sprout by overlaying a procedural sprout or flower at about y 0.55 bind and tint the glass (grey when wilted, bright when blooming). The sprout is baked into the mesh. Carry by parenting it to mixamorig:RightHand or holding it above the head."
+  },
+  "crystals": {
+    "file": "crystals.glb",
+    "heightM": 1.5,
+    "bindHeight": 1.0,
+    "forward": "+Z",
+    "rigged": false,
+    "clips": {},
+    "bindBBox": {
+      "min": [
+        -0.422,
+        0,
+        -0.402
+      ],
+      "max": [
+        0.422,
+        1.0,
+        0.402
+      ]
+    },
+    "notes": "A cluster of chunky faceted ice-blue and cyan crystals with two small violet ones on a blue-purple rock base. Good for icy moons, Mercury's night side, Uranus and Neptune. Add a soft emissive point light or bloom for glow; the texture is unlit-looking but the material is not emissive. Scale 0.5 to 3 m and rotate for variety."
+  },
+  "debris": {
+    "file": "debris.glb",
+    "heightM": 1.4,
+    "bindHeight": 0.477,
+    "forward": "+X",
+    "rigged": false,
+    "clips": {},
+    "bindBBox": {
+      "min": [
+        -0.5,
+        0,
+        -0.34
+      ],
+      "max": [
+        0.5,
+        0.477,
+        0.34
+      ]
+    },
+    "notes": "A broken rocket-stage chunk: a white cylinder with an orange band and a navy band, a torn jagged open end at one end of X and an orange nose cone at the other (which end is which is not checked; look in the scene), plus a loose blue panel piece lying under it. Long axis X; about 4 m long at heightM 1.4. Level 15 debris field: tumble it slowly and knock it down. Instance it with random rotations, and scale 0.4 to 1.2 for small junk."
+  }
+}

@@ -10,7 +10,8 @@ const tv = (v: { x: number; y: number; z: number }) => new THREE.Vector3(v.x, v.
 export class CameraRig {
   fwd = new THREE.Vector3(0, 0, -1);
   up = new THREE.Vector3(0, 1, 0);
-  pitch = 0.32;
+  pitch = 0.24;
+  private groundAlt = 0;
   dist = 7;
   private idle = 0;
   private shakeT = 0;
@@ -24,7 +25,7 @@ export class CameraRig {
     // look from the spawn toward the level's page
     const f = tv(p.facing);
     this.fwd.copy(f.sub(this.up.clone().multiplyScalar(f.dot(this.up)))).normalize();
-    this.pitch = 0.32;
+    this.pitch = 0.24;
     this.altSmooth = 0;
     this.place(sim, 1);
   }
@@ -76,7 +77,9 @@ export class CameraRig {
   private place(sim: Sim, dt: number, reduced = false): void {
     const p = sim.player;
     const g = gravityAt(sim, p.pos, p.bodyId);
-    const alt = Math.min(12, Math.max(0, g.distance));
+    // pull back with height above the last ground (a ledge top is ground too), not with altitude over the planet
+    if (p.grounded) this.groundAlt = g.distance;
+    const alt = Math.min(12, Math.max(0, g.distance - this.groundAlt));
     this.altSmooth += (alt - this.altSmooth) * (1 - Math.exp(-2.5 * dt));
     const dist = this.dist + Math.min(7, this.altSmooth * 0.55);
     const focus = tv(p.pos).addScaledVector(this.up, 0.6);
@@ -98,6 +101,7 @@ export class CameraRig {
     }
     this.cam.position.lerp(pos, dt >= 1 ? 1 : 1 - Math.exp(-10 * dt));
     this.cam.up.copy(this.up);
-    this.cam.lookAt(focus.clone().addScaledVector(this.fwd, 1.6).addScaledVector(this.up, 0.4));
+    // aim a little ahead and above Nuri so the horizon and the sky (Earth, the Sun) sit in the upper half of the frame
+    this.cam.lookAt(focus.clone().addScaledVector(this.fwd, 2.6).addScaledVector(this.up, 0.9));
   }
 }

@@ -5,7 +5,7 @@ import type { Player } from '../core/physics';
 
 // Nuri: the rigged Tripo explorer when loaded (AnimationMixer), else a procedural stand-in with squash & stretch.
 
-export type Anim = 'idle' | 'run' | 'jump' | 'fall' | 'land' | 'pound' | 'cheer' | 'shiver' | 'overheat';
+export type Anim = 'idle' | 'run' | 'jump' | 'fall' | 'land' | 'pound' | 'cheer' | 'shiver' | 'overheat' | 'scared';
 
 const tv = (v: { x: number; y: number; z: number }) => new THREE.Vector3(v.x, v.y, v.z);
 
@@ -22,6 +22,7 @@ export class NuriView {
   private lockAnim = 0;
   private proc: { legs: THREE.Object3D[]; arms: THREE.Object3D[] } | null = null;
   private shadow: THREE.Mesh;
+  private airT = 0;
   height = 1.15;
 
   constructor() {
@@ -30,16 +31,14 @@ export class NuriView {
     if (m) {
       this.body.add(m);
       const g = gltf('nuri')!;
-      this.mixer = new THREE.AnimationMixer(m.userData.inner);
+      this.mixer = (m.userData.mixer as THREE.AnimationMixer | undefined) ?? new THREE.AnimationMixer(m.userData.inner);
+      this.mixer.stopAllAction();
       const clips = modelEntry('nuri')?.clips ?? {};
       for (const [role, name] of Object.entries(clips)) {
         const clip = g.animations.find((a) => a.name === name);
         if (clip) this.actions.set(role as Anim, this.mixer.clipAction(clip));
       }
-      m.traverse((o) => {
-        const mm = o as THREE.Mesh;
-        if (mm.isMesh && /helmet|glass/i.test(mm.name + (mm.material as THREE.Material).name)) this.helmetMat = mm.material as THREE.MeshStandardMaterial;
-      });
+      this.addGlassHelmet(m);
     } else {
       this.buildProcedural();
     }
@@ -52,6 +51,23 @@ export class NuriView {
     this.shadow.position.y = 0.03;
     this.root.add(this.shadow);
     this.play('idle');
+  }
+
+  /** The Tripo helmet is painted and opaque; a clear bubble on the head bone reads as glass and carries frost/heat tint. */
+  private addGlassHelmet(m: THREE.Object3D): void {
+    let head: THREE.Object3D | undefined;
+    m.traverse((o) => { if (!head && /mixamorig:?Head$/.test(o.name)) head = o; });
+    if (!head) return;
+    m.updateMatrixWorld(true);
+    const bodyScale = (m.userData.inner as THREE.Object3D).scale.x; // bind units → metres
+    const ws = head.getWorldScale(new THREE.Vector3()).x || 1;
+    this.helmetMat = new THREE.MeshPhysicalMaterial({ color: '#dff4ff', transparent: true, opacity: 0.22, roughness: 0.05, metalness: 0, clearcoat: 1, depthWrite: false, emissive: '#000000' });
+    const bubble = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 20), this.helmetMat);
+    bubble.scale.setScalar((0.2 * bodyScale) / ws);
+    const off = head.worldToLocal(head.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0.09 * bodyScale, 0.01 * bodyScale)));
+    bubble.position.copy(off);
+    bubble.renderOrder = 2;
+    head.add(bubble);
   }
 
   private buildProcedural(): void {
@@ -93,19 +109,23 @@ export class NuriView {
     if (this.current === a) return;
     const prev = this.current ? this.actions.get(this.current) : undefined;
     this.current = a;
-    const act = this.actions.get(a) ?? (a === 'fall' ? this.actions.get('jump') : a === 'pound' || a === 'land' ? this.actions.get('jump') : undefined) ?? this.actions.get('idle');
+    const act = this.actions.get(a) ?? (a === 'fall' || a === 'scared' ? this.actions.get('jump') : a === 'pound' || a === 'land' ? this.actions.get('jump') : undefined) ?? this.actions.get('idle');
     if (!act) return;
-    const once = a === 'land' || a === 'jump';
+    const once = a === 'land' || a === 'jump' || a === 'pound';
     act.reset();
+    act.paused = false;
+    act.timeScale = 1;
     act.setLoop(once ? THREE.LoopOnce : THREE.LoopRepeat, Infinity);
     act.clampWhenFinished = once;
-    act.fadeIn(0.15).play();
+    // pound: skip the wind-up so the slam (0.88 s into the clip) meets the ground
+    if (a === 'pound') act.time = 0.55;
+    act.fadeIn(a === 'land' ? 0.05 : 0.15).play();
     if (prev && prev !== act) prev.fadeOut(0.15);
   }
 
   impulse(kind: 'jump' | 'land' | 'pound' | 'puff', strength = 1): void {
     if (kind === 'jump') this.squash = -0.25;
-    if (kind === 'land') this.squash = Math.min(0.35, 0.12 + strength * 0.02);
+    if (kind === 'land') { this.squash = Math.min(0.35, 0.12 + strength * 0.02); if (strength > 6) this.play('land', 0.35); }
     if (kind === 'pound') this.squash = 0.45;
     if (kind === 'puff') (this.jet.material as THREE.SpriteMaterial).opacity = 1;
   }
@@ -125,9 +145,15 @@ export class NuriView {
 
     const vn = p.vel.x * up.x + p.vel.y * up.y + p.vel.z * up.z;
     const speedT = Math.hypot(p.vel.x - up.x * vn, p.vel.y - up.y * vn, p.vel.z - up.z * vn);
+    if (p.grounded) this.airT = 0;
     if (won) this.play('cheer');
     else if (p.pounding) this.play('pound');
-    else if (!p.grounded) this.play(vn > 0 ? 'jump' : 'fall');
+    else if (!p.grounded) {
+      // the Tripo 'jump' clip is a string of small hops: play the take-off, then hold that pose while airborne.
+      // A long fall (cloud-fall into a gas giant, a drop off a ledge) switches to the flailing 'scared' loop.
+      this.airT += dt;
+      this.play(this.airT > 1.6 && vn < -2 ? 'scared' : 'jump');
+    }
     else if (meter > 0.55) this.play('overheat');
     else if (meter < -0.55) this.play('shiver');
     else if (speedT > 0.8) this.play('run');
@@ -135,6 +161,8 @@ export class NuriView {
     if (this.mixer) {
       const run = this.actions.get('run');
       if (run && this.current === 'run') run.timeScale = Math.max(0.6, speedT / 5);
+      const jump = this.actions.get('jump');
+      if (jump && this.current === 'jump' && jump.time > 0.22) jump.paused = true;
       this.mixer.update(dt);
     }
 

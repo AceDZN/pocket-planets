@@ -10,6 +10,9 @@ export interface ModelEntry { file: string; heightM?: number; forward?: string; 
 
 const loaded = new Map<string, GLTF>();
 let manifest: Record<string, ModelEntry> = {};
+/** Scene names that share one Tripo file. */
+const ALIAS: Record<string, string> = { crystal: 'crystals', satellite_gps: 'satellite' };
+const real = (n: string): string => ALIAS[n] ?? n;
 
 export async function loadModels(names: string[], onProgress?: (f: number) => void): Promise<void> {
   try {
@@ -17,7 +20,7 @@ export async function loadModels(names: string[], onProgress?: (f: number) => vo
     if (res.ok) manifest = await res.json();
   } catch { manifest = {}; }
   const loader = new GLTFLoader();
-  const want = names.filter((n) => manifest[n]?.file && !loaded.has(n));
+  const want = [...new Set(names.map(real))].filter((n) => manifest[n]?.file && !loaded.has(n));
   let done = 0;
   await Promise.all(want.map(async (n) => {
     try {
@@ -29,12 +32,13 @@ export async function loadModels(names: string[], onProgress?: (f: number) => vo
   }));
 }
 
-export const hasModel = (n: string): boolean => loaded.has(n);
-export const modelEntry = (n: string): ModelEntry | undefined => manifest[n];
-export const gltf = (n: string): GLTF | undefined => loaded.get(n);
+export const hasModel = (n: string): boolean => loaded.has(real(n));
+export const modelEntry = (n: string): ModelEntry | undefined => manifest[real(n)];
+export const gltf = (n: string): GLTF | undefined => loaded.get(real(n));
 
 /** Clone a loaded model scaled so its largest extent (or height for characters) is `size`, base at y = 0. */
 export function cloneModel(n: string, size: number, byHeight = false): THREE.Object3D | null {
+  n = real(n);
   const g = loaded.get(n);
   if (!g) return null;
   const inner = SkeletonUtils.clone(g.scene);
@@ -48,6 +52,14 @@ export function cloneModel(n: string, size: number, byHeight = false): THREE.Obj
   const outer = new THREE.Group();
   outer.add(inner);
   outer.userData.inner = inner;
+  // rigged models never show their T-pose: start them in the idle clip (the caller may keep animating the mixer)
+  const idle = manifest[n]?.rigged && g.animations.find((a) => a.name === manifest[n].clips?.idle);
+  if (idle) {
+    const mixer = new THREE.AnimationMixer(inner);
+    mixer.clipAction(idle).play();
+    mixer.update(0.4);
+    outer.userData.mixer = mixer;
+  }
   return outer;
 }
 
@@ -228,6 +240,13 @@ function fallback(n: string, size: number, label?: string): THREE.Object3D {
 export function makeModel(n: string, size: number, label?: string): THREE.Object3D {
   const m = cloneModel(n, size);
   if (!m) return fallback(n, size, label);
+  if (n === 'crystal') {
+    // the Tripo crystals glow in their texture only; add the light the gameplay reads
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(190,130,255,1)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.7 }));
+    glow.scale.setScalar(size * 1.6);
+    glow.position.y = size * 0.45;
+    m.add(glow);
+  }
   if (label) {
     const { tex, aspect } = labelTexture(label);
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));

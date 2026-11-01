@@ -21,7 +21,9 @@ import { buildMap, type MapView } from './scene/map';
 import { loadModels } from './scene/models';
 import { lookFor } from './scene/palette';
 import { Hud } from './ui/hud';
-import { titleScreen, mapOverlay, winCard, pausePanel, atlasPanel, el } from './ui/screens';
+import { titleScreen, mapOverlay, winCard, pausePanel, atlasPanel, guessCard, dailyEndCard, el } from './ui/screens';
+import { dailyKey, dailyPlan, mysteryDef, guessFeedbackHe, dailyScore, dailyStreak, type DailyPlan } from './core/daily';
+import type { LevelDef } from './core/level';
 
 const SLUG = 'pocket-planets';
 initHost(SLUG);
@@ -67,6 +69,8 @@ let introEl: HTMLElement | null = null;
 let winTimer = 0;
 let fpsAcc = 0, fpsN = 0, fps = 0;
 let camFill: THREE.DirectionalLight | null = null;
+/** Daily comet run in progress (null in the story path). Daily levels post nothing to the host and save no pages. */
+let daily: { plan: DailyPlan; i: number; t0: number; firstTry: number; crumbs: number; tries: number } | null = null;
 
 function resize(): void {
   const w = app.clientWidth, h = app.clientHeight;
@@ -91,8 +95,8 @@ function clearScene(): void {
 
 // ---------------- level ----------------
 
-function openLevel(n: number, opts: { deep?: boolean } = {}): void {
-  const def = LEVELS[n - 1];
+function openLevel(n: number, opts: { deep?: boolean; def?: LevelDef } = {}): void {
+  const def = opts.def ?? LEVELS[n - 1];
   if (!def) return;
   clearScene();
   run = startLevel(def);
@@ -111,7 +115,7 @@ function openLevel(n: number, opts: { deep?: boolean } = {}): void {
   playAmbient(def.worldId);
   render();
   if (!readyPosted) { postToHost({ type: 'ready' }); readyPosted = true; }
-  postToHost({ type: 'level-start', level: n });
+  if (!daily) postToHost({ type: 'level-start', level: n });
   fromDeepLink = !!opts.deep;
 }
 
@@ -205,6 +209,15 @@ function onWon(): void {
   if (!run || !hud) return;
   const n = run.def.n;
   const st = stars(run);
+  if (daily) {
+    daily.crumbs += run.crumbs.filter(Boolean).length;
+    save.log.push(...run.log);
+    writeSave(save);
+    sfx.win();
+    mode = 'won';
+    winTimer = 1.6;
+    return;
+  }
   save.stars[n] = Math.max(save.stars[n] ?? 0, st);
   save.atlas[n] = true;
   save.log.push(...run.log);
@@ -218,6 +231,7 @@ function onWon(): void {
 
 function showWinCard(): void {
   if (!run) return;
+  if (daily) { showGuess(); return; }
   const def = run.def;
   const last = def.n >= LEVELS.length;
   setOverlay(winCard(def, stars(run), run.crumbs.filter(Boolean).length, () => openLevel(def.n + 1), () => openLevel(def.n), () => openMap(def.n), last));
@@ -231,7 +245,7 @@ function togglePause(): void {
     setInputEnabled(false);
     setOverlay(pausePanel(save.muted, save.reduced, !!run.def.noHints, {
       resume: () => togglePause(),
-      restart: () => { if (run) { const keep = run; run = restartLevel(keep); clearScene(); buildLevelScene(); hud?.start(run); mode = 'play'; setOverlay(null); setInputEnabled(true); postToHost({ type: 'level-start', level: run.def.n }); levelT0 = performance.now(); } },
+      restart: () => { if (run) { const keep = run; run = restartLevel(keep); clearScene(); buildLevelScene(); hud?.start(run); mode = 'play'; setOverlay(null); setInputEnabled(true); if (!daily) postToHost({ type: 'level-start', level: run.def.n }); levelT0 = performance.now(); } },
       map: () => openMap(run?.def.n ?? 1),
       hint: () => { togglePause(); doHint(); },
       mute: (m) => { save.muted = m; setMuted(m); hud?.setMuted(m); writeSave(save); },
@@ -258,9 +272,50 @@ function openAtlas(): void {
   }));
 }
 
+// ---------------- daily comet ----------------
+
+function startDaily(): void {
+  daily = { plan: dailyPlan(dailyKey(), LEVELS), i: 0, t0: performance.now(), firstTry: 0, crumbs: 0, tries: 0 };
+  openDailyStage();
+}
+
+function openDailyStage(): void {
+  if (!daily) return;
+  const st = daily.plan.stages[daily.i];
+  daily.tries = 0;
+  openLevel(st.level, { def: mysteryDef(LEVELS[st.level - 1]) });
+}
+
+function showGuess(): void {
+  if (!daily) return;
+  const d = daily;
+  const st = d.plan.stages[d.i];
+  setOverlay(guessCard(d.i + 1, st.options.map((id) => ({ id, he: WORLDS[id].he })), (id) => {
+    d.tries++;
+    if (id !== st.world) { sfx.wrong(); return guessFeedbackHe(st.world, id); }
+    if (d.tries === 1) d.firstTry++;
+    sfx.page();
+    if (run) hud?.revealName(WORLDS[st.world].he);
+    d.i++;
+    if (d.i < d.plan.stages.length) openDailyStage();
+    else finishDaily();
+    return null;
+  }));
+}
+
+function finishDaily(): void {
+  if (!daily) return;
+  const d = daily;
+  const score = dailyScore(d.firstTry, d.crumbs);
+  save.daily[d.plan.key] = Math.max(save.daily[d.plan.key] ?? 0, score);
+  writeSave(save);
+  setOverlay(dailyEndCard(score, save.daily[d.plan.key], dailyStreak(save.daily), d.firstTry, d.crumbs, (performance.now() - d.t0) / 1000, () => startDaily(), () => openMap()));
+}
+
 // ---------------- map / title ----------------
 
 function openMap(cur?: number): void {
+  daily = null;
   clearScene();
   run = null;
   hud?.show(false);
@@ -282,13 +337,14 @@ function refreshMapOverlay(): void {
     select: (n) => { mapCur = n; map?.setCurrent(n); refreshMapOverlay(); },
     atlas: () => openAtlas(),
     back: () => openTitle(),
+    daily: () => { initAudio(); startDaily(); },
   }));
 }
 
 function openTitle(): void {
   openMap();
   mode = 'title';
-  setOverlay(titleScreen(() => { initAudio(); openMap(); }, Object.keys(save.atlas).length > 0));
+  setOverlay(titleScreen(() => { initAudio(); openMap(); }, Object.keys(save.atlas).length > 0, () => { initAudio(); startDaily(); }));
 }
 
 function updateMapLabels(): void {
@@ -315,7 +371,7 @@ function currentInput(dt: number): { input: Input; camDX: number; camDY: number 
     if (u === 'mute') toggleMute();
     if (u === 'hint') doHint();
     if (u === 'atlas' && (mode === 'play' || mode === 'map')) openAtlas();
-    if (u === 'restart' && mode === 'play' && run) { run = restartLevel(run); clearScene(); buildLevelScene(); hud?.start(run); postToHost({ type: 'level-start', level: run.def.n }); levelT0 = performance.now(); }
+    if (u === 'restart' && mode === 'play' && run) { run = restartLevel(run); clearScene(); buildLevelScene(); hud?.start(run); if (!daily) postToHost({ type: 'level-start', level: run.def.n }); levelT0 = performance.now(); }
     if (u === 'blur' && mode === 'play' && !manualTime && !bot && document.hidden) togglePause();
   }
   if (c.jumpPressed || c.actionPressed) initAudio();

@@ -140,3 +140,9 @@ body { font-family: Rubik, system-ui, sans-serif; color: var(--ink); -webkit-use
 }
 @media (prefers-reduced-motion: reduce) { .banner .t, .toast, .star.pop { animation: none; } }
 .reduced .banner .t, .reduced .toast, .reduced .star.pop { animation: none !important; }
+
+/* daily comet */
+.ls-daily { position: absolute; bottom: 124px; right: 18px; padding: 8px 14px; border-radius: 999px; font: inherit; font-weight: 800; font-size: 15px; color: #fff; cursor: pointer; }
+.guess { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.guess .tried { opacity: 0.45; text-decoration: line-through; }
+.daily-score { font-size: clamp(26px, 3cqmin + 12px, 44px); font-weight: 900; color: var(--gold); }

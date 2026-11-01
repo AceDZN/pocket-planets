@@ -80,7 +80,7 @@ export function bandTexture(colors: string[], seed = 3, w = 512, h = 256): THREE
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const wob = (fbm((x / w) * 6, (y / h) * 3, seed, 6) - 0.5) * 0.12;
     const band = (y / h + wob) * colors.length * 2.2;
-    const k = Math.floor(band) % cols.length;
+    const k = ((Math.floor(band) % cols.length) + cols.length) % cols.length;
     const k2 = (k + 1) % cols.length;
     const f = band - Math.floor(band);
     const col = cols[k].clone().lerp(cols[k2], f * f);

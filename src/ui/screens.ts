@@ -20,19 +20,21 @@ export function el(html: string): HTMLElement {
 
 const stars = (n: number, cls = '') => `<div class="stars ${cls}">${[0, 1, 2].map((i) => STAR_SVG.replace('class="star"', `class="star${i < n ? ' on' : ''}"`)).join('')}</div>`;
 
-export function titleScreen(onPlay: () => void, hasProgress: boolean): HTMLElement {
+export function titleScreen(onPlay: () => void, hasProgress: boolean, onDaily: () => void): HTMLElement {
   const s = el(`<div class="screen">
     <h1 class="logo">כוכבים בכיס</h1>
     <div class="logo-en">POCKET PLANETS</div>
     <p class="tag">שביטון השובב ניפץ את מערכת השמש של הפלנטריום ופיזר את דפי האטלס. קפצו בין עולמות קטנטנים, הרגישו את הכבידה, החום והאוויר של כל אחד, והחזירו את הדפים!</p>
-    <button class="btn">${hasProgress ? 'המשיכו במסע ▶' : 'יוצאים לדרך ▶'}</button>
+    <button class="btn" data-a="play">${hasProgress ? 'המשיכו במסע ▶' : 'יוצאים לדרך ▶'}</button>
+    <button class="btn ghost" data-a="daily">☄️ השביט היומי</button>
     <div class="small">גאוגרפיה לכיתה ח׳ · פרק 1: היקום ומערכת השמש</div>
   </div>`);
-  s.querySelector('button')!.addEventListener('click', onPlay);
+  s.querySelector('[data-a="play"]')!.addEventListener('click', onPlay);
+  s.querySelector('[data-a="daily"]')!.addEventListener('click', onDaily);
   return s;
 }
 
-export interface MapHandlers { play(n: number): void; tab(w: number): void; select(n: number): void; atlas(): void; back(): void }
+export interface MapHandlers { play(n: number): void; tab(w: number): void; select(n: number): void; atlas(): void; back(): void; daily(): void }
 
 export function mapOverlay(levels: LevelDef[], save: Save, cur: number, h: MapHandlers): HTMLElement {
   const pages = Object.values(save.atlas).filter(Boolean).length;
@@ -46,7 +48,9 @@ export function mapOverlay(levels: LevelDef[], save: Save, cur: number, h: MapHa
     <div class="ls-info card"><div>${cur}. ${curDef.hideName && !save.atlas[cur] ? '???' : curDef.titleHe}</div><div class="sk">${curDef.skillHe}</div></div>
     <button class="btn ls-play">שחקו ▶</button>
     <button class="ls-atlas card"><span class="book">📖</span>אטלס</button>
+    <button class="ls-daily card">☄️ השביט היומי</button>
   </div>`);
+  s.querySelector('.ls-daily')!.addEventListener('click', () => h.daily());
   s.querySelectorAll<HTMLElement>('.tab').forEach((b) => b.addEventListener('click', () => h.tab(Number(b.dataset.w))));
   s.querySelector('.ls-play')!.addEventListener('click', () => h.play(cur));
   s.querySelector('.ls-atlas')!.addEventListener('click', () => h.atlas());
@@ -103,5 +107,33 @@ export function atlasPanel(levels: LevelDef[], save: Save, onClose: () => void):
     <button class="btn" data-a="close">סגירה</button>
   </div></div>`);
   s.querySelector('[data-a="close"]')!.addEventListener('click', onClose);
+  return s;
+}
+
+/** Daily comet: after the page, name the world. A wrong pick gets Shvitton's comic explanation and stays retryable. */
+export function guessCard(stage: number, options: { id: string; he: string }[], onPick: (id: string) => string | null): HTMLElement {
+  const s = el(`<div class="screen dim"><div class="wincard card">
+    <div class="small">השביט היומי · עולם <bdi class="n">${stage}/3</bdi></div>
+    <h2>על איזה עולם נחתתם?</h2>
+    <div class="guess">${options.map((o) => `<button class="btn ghost" data-w="${o.id}">${o.he}</button>`).join('')}</div>
+    <div class="fact guess-say" hidden></div>
+  </div></div>`);
+  const say = s.querySelector<HTMLElement>('.guess-say')!;
+  s.querySelectorAll<HTMLButtonElement>('.guess button').forEach((b) => b.addEventListener('click', () => {
+    const msg = onPick(b.dataset.w!);
+    if (msg) { b.disabled = true; b.classList.add('tried'); say.hidden = false; say.innerHTML = msg; }
+  }));
+  return s;
+}
+
+export function dailyEndCard(score: number, best: number, streak: number, firstTry: number, crumbs: number, seconds: number, onAgain: () => void, onMap: () => void): HTMLElement {
+  const s = el(`<div class="screen dim"><div class="wincard card">
+    <h2>☄️ השביט היומי הושלם!</h2>
+    <div class="daily-score"><bdi class="n">${score}/12</bdi> שביטים</div>
+    <div class="fact">ניחוש בפעם הראשונה: <bdi class="n">${firstTry}/3</bdi> · פירורי כוכב: <bdi class="n">${crumbs}/9</bdi> · זמן: <bdi class="n">${Math.round(seconds)}</bdi> שניות<br>השיא של היום: <bdi class="n">${best}</bdi> · ימים ברצף: <bdi class="n">${streak}</bdi><br>מחר שביטון יזרוק אתכם לשלושה עולמות אחרים.</div>
+    <div class="row-btns"><button class="btn" data-a="again">שוב ↻</button><button class="btn ghost" data-a="map">מפה</button></div>
+  </div></div>`);
+  s.querySelector('[data-a="again"]')!.addEventListener('click', onAgain);
+  s.querySelector('[data-a="map"]')!.addEventListener('click', onMap);
   return s;
 }
