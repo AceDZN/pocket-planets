@@ -304,7 +304,9 @@ function zoneMesh(z: Zone): THREE.Object3D {
     const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), new THREE.MeshStandardMaterial({ color: cool ? '#bff0ff' : '#ffd08a', emissive: cool ? '#3ac0ff' : '#ff9a2a', emissiveIntensity: 2 }));
     bulb.position.y = 1.2;
     g.add(bulb);
-    g.add(Object.assign(new THREE.PointLight(cool ? '#7ad8ff' : '#ffa040', 5, z.radius * 2.2, 1.5), { position: new THREE.Vector3(0, 1.3, 0) }));
+    const lt = new THREE.PointLight(cool ? '#7ad8ff' : '#ffa040', 5, z.radius * 2.2, 1.5);
+    lt.position.set(0, 1.3, 0);
+    g.add(lt);
     const { tex, aspect } = labelTexture(cool ? '❄ קירור' : '🔥 חימום');
     const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
     label.scale.set(0.38 * aspect, 0.38, 1);
