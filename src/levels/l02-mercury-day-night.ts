@@ -64,6 +64,8 @@ export const L02: LevelDef = {
         deco('rock', M, -52, 6, 1.2), deco('rock', M, 24, -6, 0.9), deco('rock', M, 8, 92, 1.1),
         deco('sign', M, -58, 3, 1, { label: 'רצועת הדמדומים ⬆' }),
         deco('sign', M, -3, 9, 1, { label: '☀ צד היום: היעזרו בצל' }),
+        // frost crystals on the night side, so the cold half reads from the road (visual target 02)
+        deco('ice_crystal', M, -40, -24, 1.1), deco('ice_crystal', M, -20, -31, 0.8), deco('ice_crystal', M, 0, -27, 1.3), deco('ice_crystal', M, 18, -35, 0.9), deco('ice_crystal', M, 35, -25, 1.2), deco('ice_crystal', M, -55, -36, 1), deco('ice_crystal', M, 10, -52, 1.4), deco('ice_crystal', M, 50, -42, 0.9), deco('ice_crystal', M, -28, -60, 1.2), deco('ice_crystal', M, 28, -70, 1),
         deco('flag', M, 46, 3, 1),
       ],
     };
