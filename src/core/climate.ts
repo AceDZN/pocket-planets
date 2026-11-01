@@ -27,7 +27,7 @@ export function temperatureAt(sim: Sim, w: WorldProfile, p: V3, up: V3, sunDir: 
   }
   const sun = dot(up, sunDir);
   const shade = sun > 0 && w.dayC !== w.nightC && rayBlocked(sim, p, sunDir, 30, undefined);
-  const f = smooth(-0.12, 0.35, shade ? -0.15 : sun);
+  const f = smooth(-0.2, 0.45, shade ? -0.25 : sun);
   return { c: w.nightC + (w.dayC - w.nightC) * f, sun, shade, zone };
 }
 
