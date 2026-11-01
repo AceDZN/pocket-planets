@@ -27,7 +27,8 @@ export function temperatureAt(sim: Sim, w: WorldProfile, p: V3, up: V3, sunDir: 
   }
   const sun = dot(up, sunDir);
   const shade = sun > 0 && w.dayC !== w.nightC && rayBlocked(sim, p, sunDir, 30, undefined);
-  const f = smooth(-0.2, 0.45, shade ? -0.25 : sun);
+  // shade under a high Sun is mild (the rock and ground around still glow), not as cold as the night side
+  const f = shade ? Math.min(0.4, smooth(-0.2, 0.45, sun)) : smooth(-0.2, 0.45, sun);
   return { c: w.nightC + (w.dayC - w.nightC) * f, sun, shade, zone };
 }
 
@@ -45,30 +46,32 @@ export function suitStep(meter: number, s: HeatSample, dt: number): number {
   return Math.max(-1, Math.min(1, m));
 }
 
-export type Need = 'air' | 'water' | 'warmth' | 'ground';
+export type Need = 'air' | 'water' | 'warmth';
 export interface LifeCheck { ok: boolean; have: Record<Need, boolean>; reasonHe: string }
 
-const NEED_HE: Record<Need, string> = {
-  air: 'אין אוויר לנשימה (אטמוספרה)',
-  water: 'אין מים נוזליים (הידרוספרה)',
-  warmth: 'חם מדי או קר מדי',
-  ground: 'אין קרקע לשורשים (גאוספרה)',
-};
+/** What is missing, said about this world: Venus has air (thick and unbreathable), Mars has air (too thin). */
+function needHe(k: Need, w: WorldProfile): string {
+  if (k === 'air') {
+    return w.air === 'none' ? 'אין כאן אטמוספרה בכלל'
+      : w.air === 'thin' ? 'האטמוספרה כאן דלילה מאוד ולא מתאימה לחיים'
+      : w.air === 'thick' && w.id !== 'earth' ? 'יש כאן אטמוספרה סמיכה, אבל היא לא מתאימה לחיים'
+      : 'האטמוספרה כאן לא מתאימה לחיים';
+  }
+  return k === 'water' ? 'אין כאן מים נוזליים (הידרוספרה)' : 'חם מדי או קר מדי';
+}
 
 /**
- * Can the seed pod bloom here? Workbook's three conditions for life (a suitable temperature, liquid water and an
- * atmosphere that supports life) plus ground for the roots. Liquid water needs a water zone and a temperature
- * between 0 and 100 °C.
+ * Can the seed pod bloom here? Workbook's three conditions for life: a suitable temperature, liquid water and an
+ * atmosphere that supports life. Liquid water needs a water zone and a temperature between 0 and 100 °C.
  */
 export function lifeCheck(sim: Sim, worldId: string, p: V3, tempC: number): LifeCheck {
   const w = WORLDS[worldId];
-  const inZone = (k: 'water' | 'soil') => sim.zones.some((z) => z.kind === k && active(sim, z) && len(sub(p, zoneCenter(sim, z))) < z.radius);
+  const inZone = (k: 'water') => sim.zones.some((z) => z.kind === k && active(sim, z) && len(sub(p, zoneCenter(sim, z))) < z.radius);
   const have: Record<Need, boolean> = {
     air: w.id === 'earth',
     water: w.spheres.hydro && inZone('water') && tempC > 0 && tempC < 100,
     warmth: tempC >= 5 && tempC <= 40,
-    ground: w.surface && w.spheres.geo && inZone('soil'),
   };
   const missing = (Object.keys(have) as Need[]).filter((k) => !have[k]);
-  return { ok: missing.length === 0, have, reasonHe: missing.map((k) => NEED_HE[k]).join(' · ') };
+  return { ok: missing.length === 0, have, reasonHe: missing.map((k) => needHe(k, w)).join(' · ') };
 }

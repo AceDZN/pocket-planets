@@ -5,7 +5,7 @@ import { V3, v3, len, sub, clone, dot, addScaled } from './vec';
 import {
   type Sim, type Input, type PhysEvent, makeSim, step, respawn, gravityAt, bodyCenter, NO_INPUT,
 } from './physics';
-import { temperatureAt, suitStep, lifeCheck, type HeatSample, type LifeCheck } from './climate';
+import { temperatureAt, suitStep, lifeCheck, SUIT_MAX_C, type HeatSample, type LifeCheck } from './climate';
 import { WORLDS, gameGravityFactor, jumpApex } from './worlds';
 import type { LevelDef, LevelParts, Pad, Switch, ScriptApi, Spot } from './level';
 
@@ -22,6 +22,8 @@ export interface LevelRun {
   status: Status;
   pageTaken: boolean;
   crumbs: boolean[];
+  /** Crumb indices in the order they were picked up (Shvitton takes back the newest after a wrong answer). */
+  crumbOrder: number[];
   meter: number;
   heat: HeatSample;
   respawns: number;
@@ -41,6 +43,8 @@ export interface LevelRun {
   paused: boolean;
   objective: string;
   revealed: string | null;
+  /** False until the first move or jump: the suit holds steady while the intro is read at the landing spot. */
+  moved: boolean;
 }
 
 export const PAD_CHARGE = 0.7;
@@ -49,10 +53,10 @@ export function startLevel(def: LevelDef): LevelRun {
   const parts = def.build();
   const sim = makeSim(parts);
   const run: LevelRun = {
-    def, parts, sim, status: 'play', pageTaken: false, crumbs: parts.crumbs.map(() => false), meter: 0,
+    def, parts, sim, status: 'play', pageTaken: false, crumbs: parts.crumbs.map(() => false), crumbOrder: [], meter: 0,
     heat: { c: 20, sun: 1, shade: false, zone: null }, respawns: 0, hintsUsed: 0, wrongPads: 0, padCharge: {},
     usedSwitches: new Set(), toasts: [], log: [], events: [], state: {}, vars: {}, wonAt: 0, choice: null, life: null, paused: false,
-    objective: def.objectiveHe, revealed: null,
+    objective: def.objectiveHe, revealed: null, moved: false,
   };
   sim.player.checkpoint = { pos: clone(parts.spawn.pos), up: clone(parts.spawn.up) };
   def.script?.init?.(api(run));
@@ -81,7 +85,7 @@ function api(run: LevelRun): ScriptApi {
     say: (he, kind) => say(run, he, kind),
     setFlag: (f) => { if (!run.sim.flags.has(f)) { run.sim.flags.add(f); run.events.push({ type: 'flag', id: f }); } },
     clearFlag: (f) => { if (run.sim.flags.delete(f)) run.events.push({ type: 'unflag', id: f }); },
-    log: (a, o, v) => logLearn(run, a, o, v),
+    log: (a, o, v) => { if (o === 'wrong') wrongAnswer(run); logLearn(run, a, o, v); },
     state: run.state,
     player: { pos: p.pos, up: p.up, grounded: p.grounded, carrying: p.carrying, bodyWorld: g.body?.world ?? null },
     props: run.sim.props,
@@ -128,14 +132,25 @@ function usePad(run: LevelRun, pad: Pad): void {
     return;
   }
   if (pad.kind === 'wrong') {
-    run.wrongPads++;
-    logLearn(run, 'pad', 'wrong', pad.answer ?? pad.id);
     say(run, pad.explainHe ?? 'אופס! זה לא העולם הנכון. חזרה לנקודת הנחיתה.', 'oops');
+    wrongAnswer(run);
+    logLearn(run, 'pad', 'wrong', pad.answer ?? pad.id);
     run.events.push({ type: 'wrong-pad', id: pad.id });
     if (pad.back) { hop(run, pad.back); setCheckpoint(run, pad.back); }
     return;
   }
   if (pad.to) { hop(run, pad.to); setCheckpoint(run, pad.to); logLearn(run, 'pad', 'warp', pad.answer ?? pad.id); }
+}
+
+/** A wrong answer (pad, capsule, gear): guessing costs something. Shvitton snatches the newest star crumb and puts it
+ *  back where it was, so trying every pad in turn is slower and scores lower than reading the evidence. */
+export function wrongAnswer(run: LevelRun): void {
+  run.wrongPads++;
+  const i = run.crumbOrder.pop();
+  if (i === undefined) return;
+  run.crumbs[i] = false;
+  run.events.push({ type: 'crumb-lost', id: String(i) });
+  say(run, 'שביטון חטף לכם פירור כוכב והחזיר אותו למקום שלו! ניחוש עולה ביוקר, עדיף להיעזר בעדויות.', 'oops');
 }
 
 export function win(run: LevelRun): void {
@@ -217,7 +232,9 @@ export function tick(run: LevelRun, input: Input, dt: number): GameEvent[] {
   // heat / cold
   run.heat = temperatureAt(sim, w, p.pos, p.up, run.parts.sunDir);
   const prevMeter = run.meter;
-  run.meter = suitStep(run.meter, run.heat, dt);
+  if (!run.moved && (len(input.move) > 0.05 || input.jumpPressed)) run.moved = true;
+  const reading = !run.moved && len(sub(p.pos, run.parts.spawn.pos)) < 2;
+  if (!reading) run.meter = suitStep(run.meter, run.heat, dt * (run.heat.c > SUIT_MAX_C ? run.def.heatRate ?? 1 : 1));
   if (Math.abs(run.meter) >= 1 && run.status === 'play') {
     const hot = run.meter > 0;
     run.respawns++;
@@ -238,6 +255,7 @@ export function tick(run: LevelRun, input: Input, dt: number): GameEvent[] {
   for (let i = 0; i < run.parts.crumbs.length; i++) {
     if (!run.crumbs[i] && near(run.parts.crumbs[i], 1.0)) {
       run.crumbs[i] = true;
+      run.crumbOrder.push(i);
       run.events.push({ type: 'crumb', id: String(i) });
     }
   }

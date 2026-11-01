@@ -90,7 +90,7 @@ test('the suit overheats on the day side and recovers in comfort', () => {
   assert.ok(m < 0.2);
 });
 
-test('life needs air, liquid water, a mild temperature and ground', () => {
+test('life needs air, liquid water and a mild temperature', () => {
   const B = { id: 'b', center: v3(0, 0, 0), radius: 10 };
   const mk = (world: string) => makeSim({
     bodies: [sphereBody('b', world, B.center, B.radius, 30)], boxes: [], balls: [], props: [], spawn: surf(B.center, B.radius, 0, 0, 0.5),
@@ -101,6 +101,8 @@ test('life needs air, liquid water, a mild temperature and ground', () => {
   assert.equal(lifeCheck(mk('earth'), 'earth', at, -20).ok, false, 'frozen water and cold');
   assert.equal(lifeCheck(mk('mars'), 'mars', at, 10).have.air, false, 'Mars air does not support life');
   assert.equal(lifeCheck(mk('moon'), 'moon', at, 20).ok, false);
+  assert.match(lifeCheck(mk('venus'), 'venus', at, 465).reasonHe, /סמיכה/, 'Venus is told it has air, just not one for life');
+  assert.doesNotMatch(lifeCheck(mk('mars'), 'mars', at, 10).reasonHe, /אין כאן אטמוספרה/, 'Mars has thin air, not none');
   const far = surf(B.center, B.radius, 0, 90, 0.3).pos;
   assert.equal(lifeCheck(mk('earth'), 'earth', far, 20).have.water, false, 'no water away from the river');
 });

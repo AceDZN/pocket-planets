@@ -150,8 +150,15 @@ test('L7: the pod wilts in the desert (no water) and on the ice cap (too cold), 
 
   const probe = startLevel(L07);
   const box = (id: string) => probe.sim.boxes.find((b) => b.id === id)!;
-  const bank = podThrowAt(topOf(box('bstep'), E.center), topOf(box('bank'), E.center));
-  assert.ok(bank.run.sim.flags.has('bloom'), 'riverbank blooms');
+  const early = podThrowAt(topOf(box('bstep'), E.center), topOf(box('bank'), E.center));
+  assert.equal(early.run.sim.flags.has('bloom'), false, 'no bloom before comparing two other places');
+  assert.ok(toasts(early.events).some((t) => t.includes('להשוות')));
+  const run = startLevel(L07);
+  run.state.tried = ['desert', 'ice'];
+  place(run, topOf(box('bstep'), E.center));
+  idle(run, 0.6);
+  throwProp(run, 'pod', topOf(box('bank'), E.center).pos);
+  assert.ok(run.sim.flags.has('bloom'), 'riverbank blooms after comparing');
 });
 
 test('L7: standing on the נוגה sample cooks the suit outside the cool station', () => {
@@ -284,9 +291,15 @@ test('L16: the light tiles exist only while the light passes over them', () => {
   assert.deepEqual([...seen].sort(), [false, true]);
 });
 
+test('L16: the answer pads stay dark until two light rides were compared', () => {
+  const { events } = play(L16, [...ride('ans-andr'), { to: 'page', timeout: 3 }], 12);
+  assert.equal(events.some((e) => e.type === 'pad' && e.id === 'ans-andr'), false);
+});
+
 test('L16: the Sun and Proxima pads are wrong answers and do not win', () => {
+  const compared: LevelDef = { ...L16, script: { ...L16.script, init: (api) => api.setFlag('compared') } };
   for (const id of ['ans-sun', 'ans-prox']) {
-    const { run, events } = play(L16, [...ride(id), { to: 'page', timeout: 3 }], 12);
+    const { run, events } = play(compared, [...ride(id), { to: 'page', timeout: 3 }], 12);
     assert.ok(events.some((e) => e.type === 'wrong-pad' && e.id === id), id);
     assert.equal(run.sim.flags.has('answered'), false);
     assert.equal(run.status, 'play');

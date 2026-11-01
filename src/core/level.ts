@@ -138,6 +138,8 @@ export interface LevelDef {
   transfer?: boolean;
   /** Show the thermometer from the start (heat or cold matters here). */
   thermo?: boolean;
+  /** How fast the suit heats up here (default 1): the shade-stop levels need exposure to matter. */
+  heatRate?: number;
   /** Hide the world name in the HUD until the level is won. */
   hideName?: boolean;
   /** Spoiler-free title for catalogs and the locked atlas when the real title is the answer (hideName levels). */

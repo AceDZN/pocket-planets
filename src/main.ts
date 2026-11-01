@@ -179,6 +179,7 @@ function onEvents(evs: GameEvent[]): void {
       case 'land': { const s = (e as { apex?: number }).apex ?? 0; sfx.land(s); nuri.impulse('land', s); fx.puffDust(pos, up, Math.min(26, 6 + Math.round(s * 2)), gf * 22); break; }
       case 'pound': sfx.click(); break;
       case 'pound-land': sfx.pound(); nuri.impulse('pound'); fx.ring(pos, up, '#ffe9a0'); fx.puffDust(pos, up, 30, gf * 22); rig.shake(0.35); break;
+      case 'crumb-lost': hud.uncrumb(Number(e.id)); break;
       case 'crumb': { const i = Number(e.id); sfx.crumb(i); hud.crumb(i); fx.sparkle(tv(run.parts.crumbs[i].pos), up); break; }
       case 'page': sfx.page(); hud.page(); fx.sparkle(tv(run.parts.page.pos), up, 60); break;
       case 'checkpoint': sfx.checkpoint(); break;

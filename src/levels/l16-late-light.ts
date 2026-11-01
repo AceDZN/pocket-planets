@@ -14,11 +14,11 @@ const LIT = 2.6; // how long a tile stays lit as the pulse passes
 const PITCH = 3;
 const HUB_HALF = 4.5;
 
-interface Star { key: string; dir: V3; n: number; nameHe: string; distHe: string; dead?: boolean }
+interface Star { key: string; dir: V3; n: number; nameHe: string; distHe: string; dead?: boolean; /** "went out", agreeing with the name */ outHe: string }
 const STARS: Star[] = [
-  { key: 'sun', dir: v3(0, 0, -1), n: 2, nameHe: 'השמש', distHe: '8 דקות אור' },
-  { key: 'prox', dir: v3(1, 0, 0), n: 4, nameHe: 'פרוקסימה קנטאורי', distHe: 'יותר מ-4 שנות אור' },
-  { key: 'andr', dir: v3(-1, 0, 0), n: 7, nameHe: 'כוכב בגלקסיית אנדרומדה', distHe: '2.5 מיליון שנות אור', dead: true },
+  { key: 'sun', dir: v3(0, 0, -1), n: 2, nameHe: 'השמש', distHe: '8 דקות אור', outHe: 'כבתה' },
+  { key: 'prox', dir: v3(1, 0, 0), n: 4, nameHe: 'פרוקסימה קנטאורי', distHe: 'יותר מ-4 שנות אור', outHe: 'כבתה' },
+  { key: 'andr', dir: v3(-1, 0, 0), n: 7, nameHe: 'כוכב בגלקסיית אנדרומדה', distHe: '2.5 מיליון שנות אור', dead: true, outHe: 'כבה' },
 ];
 
 const at = (d: V3, dist: number, y = 0): V3 => addScaled(v3(0, y, 0), d, dist);
@@ -61,9 +61,9 @@ export const L16: LevelDef = {
   worldId: 'deep',
   introHe: [
     'אור נע מהר מאוד, אבל גם לו לוקח זמן להגיע. כאן אפשר לראות אותו נוסע לאורך הגשרים.',
-    'אחד משלושת הכוכבים כבר כבה, ובכל זאת עדיין רואים אותו מאיר. גלו איזה.',
+    'אחד משלושת הכוכבים כבר כבה, ובכל זאת עדיין רואים אותו מאיר. רכבו על האור משני כוכבים לפחות והשוו, ואז תוכלו לענות.',
   ],
-  objectiveHe: 'גלו איזה כוכב כבר כבה, אבל האור שלו עוד מגיע',
+  objectiveHe: 'רכבו על האור משני כוכבים כדי להשוות, ואז גלו איזה כוכב כבר כבה',
   hintsHe: [
     'משטחי השיגור בתצפית מטיסים אתכם אל כל כוכב. משם, רכבו על האור חזרה: הלבנים קיימות רק כשהאור עובר עליהן.',
     'אור השמש מגיע אלינו אחרי 8 דקות. אם השמש הייתה כבה, היינו יודעים כמעט מיד. מה לגבי כוכב שהאור שלו נוסע מיליוני שנים?',
@@ -79,9 +79,9 @@ export const L16: LevelDef = {
     ];
     const warp = (s: Star, x: number) => pad(`go-${s.key}`, hubSpot(x, -2.8), `אל ${s.nameHe}`, 'warp', { to: starTop(s) });
     const answer = (s: Star, x: number) => s.dead
-      ? pad(`ans-${s.key}`, hubSpot(x, 2.8), `${s.nameHe} כבה`, 'warp', { to: hubSpot(0, 0.2), sets: 'answered', answer: s.key })
-      : pad(`ans-${s.key}`, hubSpot(x, 2.8), `${s.nameHe} כבה`, 'wrong', {
-        back: hubSpot(-3, 0), answer: s.key,
+      ? pad(`ans-${s.key}`, hubSpot(x, 2.8), `${s.nameHe} ${s.outHe}`, 'warp', { to: hubSpot(0, 0.2), sets: 'answered', answer: s.key, when: 'compared' })
+      : pad(`ans-${s.key}`, hubSpot(x, 2.8), `${s.nameHe} ${s.outHe}`, 'wrong', {
+        back: hubSpot(-3, 0), answer: s.key, when: 'compared',
         explainHe: s.key === 'sun'
           ? 'השמש? האור שלה מגיע אלינו אחרי 8 דקות בלבד. אילו כבתה, היינו רואים את זה כמעט מיד. והנה היא זורחת!'
           : 'פרוקסימה? האור שלה בדרך קצת יותר מ-4 שנים. אילו כבתה מזמן, כבר היינו רואים. טוסו אליה ותראו שהיא עוד שם.',
@@ -125,6 +125,8 @@ export const L16: LevelDef = {
     };
   },
   script: {
+    // falling into the dark between the stars is not a ride home
+    event(api, ev) { if (ev.type === 'lost') delete api.state.riding; },
     tick(api) {
       for (const s of STARS) {
         for (let k = 1; k <= s.n; k++) {
@@ -133,6 +135,28 @@ export const L16: LevelDef = {
           if (ph < LIT) { if (!api.flags.has(f)) api.setFlag(f); } else if (api.flags.has(f)) api.clearFlag(f);
         }
       }
+      // a ride counts once Nuri gets from the tile beside a star all the way home to the observatory
+      const q = api.player.pos;
+      const rode = (api.state.rode ??= []) as string[];
+      for (const s of STARS) {
+        const t1 = at(s.dir, tileDist(s, 1), 0.2);
+        if (Math.hypot(q.x - t1.x, q.z - t1.z) < 1.6 && Math.abs(q.y - t1.y) < 2) api.state.riding = s.key;
+      }
+      const onHub = Math.abs(q.x) < HUB_HALF && Math.abs(q.z) < HUB_HALF && Math.abs(q.y - 1) < 1.5;
+      if (onHub && api.state.riding) {
+        const k = api.state.riding as string;
+        delete api.state.riding;
+        if (!rode.includes(k)) {
+          rode.push(k);
+          api.log('ride', 'light', k);
+          if (rode.length === 2) {
+            api.setFlag('compared');
+            api.say('השוויתם שתי נסיעות של אור! עכשיו נדלקו משטחי התשובה: איזה כוכב כבה?', 'good');
+            api.objective('עמדו על המשטח של הכוכב שכבר כבה');
+          } else api.say('נסיעה אחת של אור. רכבו עוד מכוכב אחר כדי להשוות.', 'info');
+        }
+      }
+      if (api.state.riding && Math.hypot(q.x, q.z) > 40) delete api.state.riding;
       const dead = STARS[2];
       const p = api.player.pos;
       const top = starTop(dead).pos;
@@ -143,7 +167,7 @@ export const L16: LevelDef = {
       }
       if (api.flags.has('answered') && !api.state.answered) {
         api.state.answered = true;
-        api.say('נכון! האור מהכוכב באנדרומדה נוסע אלינו כ-2.5 מיליון שנה. מה שאנחנו רואים הוא אור ישן מאוד, והכוכב עצמו כבר כבה.', 'good');
+        api.say('נכון! האור מהכוכב באנדרומדה נוסע אלינו כ-2.5 מיליון שנה, אז מה שאנחנו רואים הוא אור ישן מאוד. בסיפור שלנו הכוכב כבר כבה; במציאות, על כוכב רחוק כל כך אי אפשר לדעת אם הוא עוד קיים.', 'good');
       }
     },
   },

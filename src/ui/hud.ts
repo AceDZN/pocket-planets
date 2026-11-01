@@ -1,6 +1,5 @@
 import type { LevelRun } from '../core/game';
-import { JUMP_EARTH } from '../core/worlds';
-import { WORLDS } from '../core/worlds';
+import { JUMP_EARTH, WORLDS, gameGravityFactor, jumpApex } from '../core/worlds';
 import { currentWorld } from '../core/game';
 import { press } from '../input';
 
@@ -74,6 +73,9 @@ export class Hud {
     const s = this.el.querySelectorAll('.titlecard .star')[i];
     s?.classList.add('on', 'pop');
   }
+  uncrumb(i: number): void {
+    this.el.querySelectorAll('.titlecard .star')[i]?.classList.remove('on', 'pop');
+  }
   page(): void { this.q('.pageicon').classList.remove('empty'); }
 
   update(run: LevelRun, dt: number): void {
@@ -86,8 +88,11 @@ export class Hud {
     this.q<HTMLElement>('.jump .fill').style.height = `${Math.max(6, frac * 100)}%`;
     this.q<HTMLElement>('.jump .earth').style.bottom = `${(1 / this.gaugeMax) * 150}px`;
     const val = this.q('.jump .val');
+    // The number is the world's full jump (a reading of gravity); the tube shows the jump you actually made, so a quick
+    // tap fills less of it but never makes the Moon read "פי 1.5".
+    const full = jumpApex(gameGravityFactor(WORLDS[currentWorld(run)])) / JUMP_EARTH;
     if (run.def.transfer) val.textContent = p.lastApex > 0.2 ? '?' : '';
-    else val.innerHTML = p.lastApex > 0.2 || p.jumpFrom ? `פי <bdi class="n">${ratio < 9.95 ? ratio.toFixed(1).replace(/\.0$/, '') : Math.round(ratio)}</bdi>` : 'קפצו!';
+    else val.innerHTML = p.lastApex > 0.2 || p.jumpFrom ? `פי <bdi class="n">${full < 9.95 ? full.toFixed(1).replace(/\.0$/, '') : Math.round(full)}</bdi>` : 'קפצו!';
 
     const th = this.q<HTMLElement>('.thermo');
     const w = WORLDS[currentWorld(run)];

@@ -2,9 +2,10 @@ import { v3, fromLatLon, norm } from '../core/vec';
 import { type LevelDef, type BodyRef, plat, sphereBody, topOf, prop } from '../core/level';
 import { spot, deco, decoAt, zoneAt, pad, sendHome, angleDeg, ride } from './lib-b';
 
-// A seed pod looks for a home. Carry it (E), then throw or drop it (E again): it blooms only where all of life's
-// needs meet — air, liquid water, a suitable temperature and soil. Sample chunks of the Moon, Mars and נוגה hang
-// in space beside a tiny Earth; on Earth itself the desert lacks water and the ice cap is far too cold.
+// A seed pod looks for a home. Carry it (E), then throw or drop it (E again): it blooms only where Workbook's three
+// conditions for life meet — an atmosphere that supports life, liquid water and a suitable temperature. Sample chunks
+// of the Moon, Mars and נוגה hang in space beside a tiny Earth; on Earth itself the desert lacks water and the ice cap
+// is far too cold. The pod is a scientist: it won't settle until it has been tried in two other places to compare.
 
 const E: BodyRef = { id: 'earth', center: v3(0, 0, 0), radius: 16 };
 const MOON: BodyRef = { id: 'moon-chunk', center: v3(-90, 30, -60), radius: 6 };
@@ -14,6 +15,7 @@ const VENUS: BodyRef = { id: 'venus-chunk', center: v3(90, 30, -60), radius: 6 }
 const HUB = spot(E, -4, 0, 0.5);
 const ICE_DEG = 32;
 
+const wpE = (lat: number, lon: number) => spot(E, lat, lon, 0.45).pos;
 const sample = (b: BodyRef, world: string) => sphereBody(b.id, world, b.center, b.radius, 14);
 
 export const L07: LevelDef = {
@@ -24,15 +26,16 @@ export const L07: LevelDef = {
   worldId: 'earth',
   introHe: [
     'זרע קטן מחפש בית. הרימו אותו (E), וזרקו אותו (E שוב) למקום שבו הוא יוכל לפרוח.',
-    'הזרע פורח רק במקום שיש בו אוויר, מים נוזליים, טמפרטורה מתאימה וקרקע. נסו גם את דגימות הירח, מאדים ונוגה!',
+    'הזרע פורח רק במקום שיש בו אטמוספרה שמתאימה לחיים, מים נוזליים וטמפרטורה מתאימה.',
+    'הזרע הוא חוקר: לפני שיפרח הוא רוצה להשוות. נסו אותו קודם בשני מקומות אחרים, למשל בדגימות הירח, מאדים ונוגה.',
   ],
-  objectiveHe: 'מצאו לזרע מקום שבו יפרח',
+  objectiveHe: 'נסו את הזרע בשני מקומות שונים, ואז מצאו מקום שבו יפרח',
   hintsHe: [
     'משטחי השיגור שליד המחסן מובילים לדגימות של עולמות אחרים. אפשר לקחת את הזרע איתכם.',
-    'במדבר יש קרקע ואוויר, אבל חסרים מים. בכיפת הקרח המים קפואים והקור עז.',
+    'במדבר יש אוויר וחום, אבל כמעט אין מים נוזליים. בכיפת הקרח המים קפואים והקור עז.',
     'חפשו מקום שבו נפגשים מים זורמים וקרקע: גדת הנהר שבמזרח.',
   ],
-  atlasHe: 'לחיים דרושים טמפרטורה מתאימה, מים נוזליים ואטמוספרה שמתאימה לחיים. כדור הארץ הוא העולם היחיד במערכת השמש שבו שלושת התנאים מתקיימים יחד, ואפילו בו לא בכל מקום: במדבר חסרים מים, ובכיפת הקרח קר מדי.',
+  atlasHe: 'לחיים דרושים טמפרטורה מתאימה, מים נוזליים ואטמוספרה שמתאימה לחיים. כדור הארץ הוא העולם היחיד במערכת השמש שבו שלושת התנאים מתקיימים יחד, ואפילו בו לא בכל מקום באותה מידה: במדבר מעט מאוד מים, ובכיפת הקרח קר מאוד והמים קפואים.',
   skillHe: 'תנאים לקיום חיים',
   modules: ['grade-8/chapter-1/solar-system', 'grade-8/chapter-1/earth-system'],
   thermo: true,
@@ -130,16 +133,30 @@ export const L07: LevelDef = {
         // the polar cap: the water is ice and the cold is fierce
         res = { ok: false, have: { ...res.have, water: false, warmth: false }, reasonHe: 'קר מדי, והמים כאן קפואים לקרח (אין מים נוזליים)' };
       }
+      const tried = (api.state.tried ??= []) as string[];
+      if (res.ok && tried.length < 2) {
+        // the right spot, but nothing to compare it with yet
+        api.emit('wilt', pod.pos, 'pod');
+        api.log('plant', 'compare-first', tried.length);
+        api.say(`הזרע מהסס… הוא רוצה להשוות לפני שהוא פורח. נסו אותו קודם ב${tried.length ? 'עוד מקום אחד' : 'שני מקומות אחרים'}.`, 'info');
+        api.state.wiltAt = api.t;
+        return;
+      }
       if (res.ok) {
         api.setFlag('bloom');
         api.emit('bloom', pod.pos, 'pod');
         api.log('plant', 'bloom', 'riverbank');
-        api.say('הזרע פורח! יש כאן אוויר, מים נוזליים, טמפרטורה נעימה וקרקע. דף האטלס צמח על הגדה.', 'good');
+        api.say('הזרע פורח! יש כאן אטמוספרה שמתאימה לחיים, מים נוזליים וטמפרטורה נעימה. דף האטלס צמח על הגדה.', 'good');
         api.objective('קחו את דף האטלס מגדת הנהר');
         pod.alive = false;
         return;
       }
       const where = api.player.bodyWorld ?? 'earth';
+      // a "place" for the comparison: each sample world, or a part of Earth (ice cap, desert, anywhere else)
+      const place = !onEarth(pod.pos) ? where : angleDeg(E, pod.pos, 90, 0) < ICE_DEG ? 'ice' : angleDeg(E, pod.pos, 0, -40) < 25 ? 'desert' : 'meadow';
+      if (!tried.includes(place)) tried.push(place);
+      if (tried.length < 2) api.objective(`נסו את הזרע עוד במקום אחד שונה, ואז מצאו מקום שבו יפרח`);
+      else api.objective('מצאו לזרע מקום שבו יפרח');
       api.emit('wilt', pod.pos, 'pod');
       api.log('plant', 'wilt', { where, have: res.have });
       api.say(`פְסס… הזרע נבל. חסר כאן: ${res.reasonHe}`, 'oops');
@@ -171,6 +188,16 @@ export const L07: LevelDef = {
     { to: 'cp:2' },
     { to: 'top:ice1', jump: 'full', jumpAt: 2.3 },
     { to: 'crumb:1', jump: 'full', jumpAt: 0.4, near: 0.5 },
+    { to: 'cp:2' },
+    { to: 'cp:1' },
+    { to: 'cp:0' },
+    // compare first: the desert (no liquid water), then the ice cap (frozen, too cold)
+    { to: 'pod', action: true, near: 1.0 },
+    { to: 'cp:0', action: true, wait: 2.4 },
+    { to: 'pod', action: true, near: 1.0 },
+    { to: 'cp:1' },
+    { to: 'cp:2' },
+    { to: wpE(60, 8), action: true, wait: 2.4 },
     { to: 'cp:2' },
     { to: 'cp:1' },
     { to: 'cp:0' },
