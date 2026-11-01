@@ -100,6 +100,7 @@ function openLevel(n: number, opts: { deep?: boolean; def?: LevelDef } = {}): vo
   if (!def) return;
   clearScene();
   run = startLevel(def);
+  if (bot) bot = makeBot(); // autoplay carries on into the next level with a fresh route
   buildLevelScene();
   mode = 'play';
   setOverlay(null);
@@ -207,6 +208,8 @@ function onEvents(evs: GameEvent[]): void {
 
 function onWon(): void {
   if (!run || !hud) return;
+  introEl?.remove();
+  introEl = null;
   const n = run.def.n;
   const st = stars(run);
   if (daily) {
@@ -435,7 +438,7 @@ declare global {
   }
 }
 
-window.render_game_to_text = () => JSON.stringify({ mode, fps, ...(run ? describe(run) : { mapLevel: mapCur }) });
+window.render_game_to_text = () => JSON.stringify({ mode, fps, ...(daily ? { daily: daily.i + 1 } : {}), ...(run ? describe(run) : { mapLevel: mapCur }) });
 window.advanceTime = (ms: number) => {
   manualTime = true;
   const n = Math.max(1, Math.round(ms / (1000 / 60)));
@@ -452,6 +455,8 @@ window.__game = {
   realtime: () => { manualTime = false; },
   resume: () => { if (mode === 'paused') togglePause(); },
   levels: LEVELS.map((l) => ({ n: l.n, slug: l.slug, title: l.titleHe })),
+  daily: () => { startDaily(); return daily?.plan; },
+  dailyState: () => daily && { i: daily.i, firstTry: daily.firstTry, crumbs: daily.crumbs },
 };
 
 // ---------------- boot ----------------

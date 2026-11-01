@@ -87,7 +87,7 @@ export function guessFeedbackHe(actual: string, guess: string): string {
   const ja = 1 / gameGravityFactor(A), jg = 1 / gameGravityFactor(G);
   const bits: string[] = [];
   if (Math.max(ja, jg) / Math.min(ja, jg) > 1.35) bits.push(`ב${G.he} קופצים פי <bdi class="n">${fmt(jg)}</bdi> מכדור הארץ, וכאן קפצתם פי <bdi class="n">${fmt(ja)}</bdi>.`);
-  if (Math.max(A.au, G.au) / Math.min(A.au, G.au) > 1.8) bits.push(G.au < A.au ? `ב${G.he} השמש נראית גדולה יותר: הוא קרוב יותר אליה.` : `ב${G.he} השמש נראית קטנה יותר: הוא רחוק יותר ממנה.`);
+  if (Math.max(A.au, G.au) / Math.min(A.au, G.au) > 1.8) bits.push(G.au < A.au ? `ב${G.he} השמש נראית גדולה יותר, כי שם קרובים יותר אליה.` : `ב${G.he} השמש נראית קטנה יותר, כי שם רחוקים יותר ממנה.`);
   if (A.air !== G.air) bits.push(G.air === 'none' ? `ל${G.he} אין אוויר בכלל.` : `ל${G.he} יש אוויר${G.air === 'thick' ? ' סמיך' : G.air === 'thin' ? ' דליל' : ''}.`);
   return `שביטון מתגלגל מצחוק והזנב שלו מסתבך! ${bits[0] ?? ''} ${bits[1] ?? ''} נסו שוב.`.trim();
 }
