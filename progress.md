@@ -4,16 +4,19 @@ Build log for Pocket Planets (grade 8 geography, chapter 1). Newest first.
 
 ## Repo
 
-`gh repo create --public` is refused in auto mode, so the user creates the repo. Until it exists, commits stay local on
-`main`. Once it exists:
-
-```bash
-git remote add origin https://github.com/AceDZN/pocket-planets.git && git push -u origin main
-```
-
-(Or, if the user prefers to create it from this folder: `gh repo create AceDZN/pocket-planets --public --source . --push`.)
+Public at https://github.com/AceDZN/pocket-planets, branch `main`.
 
 ## 1 Nov 2026
+
+- **Independent playtest** (see `PLAYTEST.md`): 13 majors, no blockers. Fixed: guessing an answer now costs the
+  newest star crumb (Shvitton snatches it back); the jump gauge number reads the world's full jump, not how long
+  Space was held; the suit waits while the intro is read; L2's page moved under the high Sun behind shade rocks
+  (faster heating there, mild shade); L7's pod compares two places before it blooms and uses Workbook's three
+  conditions for life; L16's answer pads open after two light rides; pound text says Shift; the daily comet scrubs
+  signs and skips levels that still name a world; NASA numbers labelled העשרה. Regression tests in
+  `tests/playtest.test.ts` (80 tests in all).
+- **Per-world sky.** Sky, Sun size and air follow the world Nuri stands on (L7 samples, L14 stops, L18 mini-worlds);
+  during a long flight the level's own sky returns. The camera pulls in when a hill or ledge would hide Nuri.
 
 - **Daily comet (השביט היומי).** Replay mode: three authored worlds a day, picked by a date seed so a class shares a
   run. The world's name and the jump number are hidden, and the world's name is scrubbed from objective and hints.
