@@ -28,11 +28,11 @@ function seedOf(key: string): number {
   return h >>> 0;
 }
 
-/** Worlds a player can tell apart by feel: a single named body, not the artificial or cosmic stages. */
+/** Worlds a player can tell apart by feel: a single named body they stand on (not a gas giant), not the artificial or cosmic stages. */
 export function dailyEligible(levels: LevelDef[]): LevelDef[] {
   return levels.filter((l) => {
     const w = WORLDS[l.worldId];
-    return w && !l.transfer && !l.hideName && w.kind !== 'artificial' && w.kind !== 'cosmic' && l.n !== levels.length;
+    return w && w.surface && !l.transfer && !l.hideName && w.kind !== 'artificial' && w.kind !== 'cosmic' && l.n !== levels.length;
   });
 }
 

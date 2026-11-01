@@ -17,18 +17,18 @@ Module paths come only from `acedzn-tools/packages/catalog-geography/src` (`ids.
 | 1 | ירח הקפיצות | כבידה חלשה, אין אוויר | grade-8/chapter-1/solar-system |
 | 2 | כספית, צד יום וצד לילה | אין אטמוספרה: יום לוהט, לילה קפוא, צל מקרר | grade-8/chapter-1/solar-system |
 | 3 | נוגה הלוהטת | אטמוספרה עבה: חממה, נפילה איטית | grade-8/chapter-1/solar-system, grade-8/chapter-1/earth-system |
-| 4 | מאדים האדום | (בבנייה) | grade-8/chapter-1/solar-system |
-| 5 | איפה נחתתי? | (בבנייה) | grade-8/chapter-1/solar-system |
-| 6 | ארבע הספרות | (בבנייה) | grade-8/chapter-1/solar-system |
-| 7 | הגינה הנודדת | (בבנייה) | grade-8/chapter-1/solar-system |
-| 8 | שרשרת בין הספרות | (בבנייה) | grade-8/chapter-1/solar-system |
-| 9 | עולם בלי ספרה | (בבנייה) | grade-8/chapter-1/solar-system |
-| 10 | חגורת האסטרואידים | (בבנייה) | grade-8/chapter-1/solar-system |
-| 11 | צדק בלי קרקע | (בבנייה) | grade-8/chapter-1/solar-system |
-| 12 | טבעות שבתאי | (בבנייה) | grade-8/chapter-1/solar-system |
-| 13 | הקרים והרחוקים | (בבנייה) | grade-8/chapter-1/solar-system |
-| 14 | סלעי או גזי? | (בבנייה) | grade-8/chapter-1/solar-system |
-| 15 | מסלול הלוויינים | (בבנייה) | grade-8/chapter-1/solar-system |
-| 16 | אור שהגיע באיחור | (בבנייה) | grade-8/chapter-1/solar-system |
-| 17 | מדרגות הגודל | (בבנייה) | grade-8/chapter-1/solar-system |
-| 18 | המסע הגדול | (בבנייה) | grade-8/chapter-1/solar-system |
+| 4 | מאדים האדום | כבידה חלשה, אוויר דליל, סופת אבק | grade-8/chapter-1/solar-system, grade-8/chapter-1/space-exploration |
+| 5 | כספית | זיהוי עולם לפי עדויות: אוויר, שמיים, שמש, חום | grade-8/chapter-1/solar-system |
+| 6 | ארבע הספרות | ארבע הספרות ויחסי גומלין | grade-8/chapter-1/earth-system |
+| 7 | הגינה הנודדת | תנאים לקיום חיים | grade-8/chapter-1/solar-system, grade-8/chapter-1/earth-system |
+| 8 | שרשרת בין הספרות | יחסי גומלין בין הספרות | grade-8/chapter-1/earth-system |
+| 9 | עולם בלי ספרה | זיהוי ספרה חסרה (העברה) | grade-8/chapter-1/earth-system |
+| 10 | חגורת האסטרואידים | כבידה של גוף קטן, כבידה אל הגוף הקרוב | grade-8/chapter-1/solar-system |
+| 11 | צדק בלי קרקע | כוכב לכת גזי בלי קרקע, ירחים, אוקיינוס מתחת לקרח | grade-8/chapter-1/solar-system |
+| 12 | טבעות שבתאי | כוכב לכת גזי, טבעות, מים מתחת לקרח | grade-8/chapter-1/solar-system |
+| 13 | הקרים והרחוקים | רחוק מהשמש: קר, חשוך, שנה ארוכה | grade-8/chapter-1/solar-system |
+| 14 | סלעי או גזי? | סלעי או גזי: לחזות אם יש קרקע לפי המרחק מהשמש | grade-8/chapter-1/solar-system |
+| 15 | מסלול הלוויינים | לוויינים ופסולת חלל | grade-8/chapter-1/space-exploration |
+| 16 | אור שהגיע באיחור | שנת אור: לראות את העבר | grade-8/chapter-1/universe-structure |
+| 17 | מדרגות הגודל | סולם הגדלים ביקום | grade-8/chapter-1/universe-structure |
+| 18 | המסע הגדול | זיהוי עולמות (מבחן מסכם) | grade-8/chapter-1/solar-system |

@@ -66,7 +66,7 @@ export function mapOverlay(levels: LevelDef[], save: Save, cur: number, h: MapHa
 
 export function winCard(def: LevelDef, nStars: number, crumbs: number, onNext: () => void, onReplay: () => void, onMap: () => void, last: boolean): HTMLElement {
   const s = el(`<div class="screen dim"><div class="wincard card">
-    <h2>${def.transfer ? `זה היה: ${def.titleHe}` : 'דף אטלס חדש!'}</h2>
+    <h2>${def.hideName ? `זה היה: ${def.titleHe}` : 'דף אטלס חדש!'}</h2>
     ${stars(nStars, 'bigstars')}
     <div class="small">פירורי כוכב: <bdi class="n">${crumbs}/3</bdi></div>
     <div class="fact">${def.atlasHe}${def.extraHe ? `<span class="extra"><b>העשרה</b>${def.extraHe}</span>` : ''}</div>
