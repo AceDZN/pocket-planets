@@ -20,7 +20,7 @@ same keys a player does). Captures live in the git-ignored `scratch/shots/` and 
 
 | | Target | Actual (`scratch/shots/l2-mid.png`, `l2-c.png`) | Action |
 |---|---|---|---|
-| Camera | Behind Nuri, the twilight road running ahead, frozen night side on the left and scorched day side on the right | On this 14 m world a hill between camera and Nuri hid him | Occlusion pull-in: the camera now moves in to just short of any planet, hill or ledge that blocks the line to Nuri. **Fixed.** |
+| Camera | Behind Nuri, the twilight road running ahead, frozen night side on the left and scorched day side on the right | On this 14 m world a hill between camera and Nuri hid Nuri | Occlusion pull-in: the camera now moves in to just short of any planet, hill or ledge that blocks the line to Nuri. **Fixed.** |
 | Sun | Huge, top-right, flaring | Large glowing Sun (5°/AU, so 2.5× the Moon level's) | Matches in spirit; ours is a glow sprite, not a textured flare. |
 | Day/night ground | Frost and ice crystals on the night side, glowing hot rock on the day side | Day/night paint on the planet plus shade from rocks; the "צד היום: היעזרו בצל" sign | Partial. The split is readable through colour **and** the suit thermometer, the °C readout and the sign, never colour alone. Ice crystals on the night side would add to it (follow-up). |
 | HUD | Jump gauge "פי 2.6" above a thermometer | Same order and labels; the thermometer shows the live °C under the snowflake | Matches. |
