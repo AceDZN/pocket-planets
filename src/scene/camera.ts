@@ -1,11 +1,27 @@
 import * as THREE from 'three';
 import type { Sim } from '../core/physics';
-import { bodyCenter, gravityAt } from '../core/physics';
+import { bodyCenter, gravityAt, ballCenter, boxCenter, boxContact, active } from '../core/physics';
 
 // Third-person follow camera with planet-up orientation: the camera's "up" is the ground's up under Nuri, and its
 // forward direction is carried around the little worlds as you run. Pulls back on big low-gravity jumps.
 
 const tv = (v: { x: number; y: number; z: number }) => new THREE.Vector3(v.x, v.y, v.z);
+
+/** Distance along the ray from Nuri toward the camera at which terrain (planet, hill, platform) first blocks it. */
+function firstHit(sim: Sim, from: THREE.Vector3, to: THREE.Vector3): number {
+  const dir = to.clone().sub(from);
+  const max = dir.length();
+  dir.divideScalar(max || 1);
+  const p = new THREE.Vector3();
+  for (let s = 0.9; s < max; s += 0.25) {
+    p.copy(from).addScaledVector(dir, s);
+    const q = { x: p.x, y: p.y, z: p.z };
+    for (const b of sim.bodies) if (b.kind === 'sphere' && p.distanceTo(tv(bodyCenter(sim, b))) < b.radius + 0.3) return s;
+    for (const b of sim.balls) if (active(sim, b) && p.distanceTo(tv(ballCenter(sim, b))) < b.radius + 0.3) return s;
+    for (const b of sim.boxes) if (active(sim, b) && !b.ghost && boxContact(q, 0.2, boxCenter(sim, b), b.half, b.axes)) return s;
+  }
+  return max;
+}
 
 export class CameraRig {
   fwd = new THREE.Vector3(0, 0, -1);
@@ -94,6 +110,10 @@ export class CameraRig {
       const min = b.radius + 0.8;
       if (d.length() < min) pos.copy(c).addScaledVector(d.normalize(), min);
     }
+    // never let a hill or a ledge hide Nuri: pull in to just short of whatever blocks the view
+    const hit = firstHit(sim, focus, pos);
+    const full = pos.distanceTo(focus);
+    if (hit < full) pos.copy(focus).addScaledVector(pos.clone().sub(focus).normalize(), Math.max(1.6, hit - 0.4));
     if (this.shakeT > 0 && !reduced) {
       this.shakeT -= dt;
       const a = this.shakeA * (this.shakeT / 0.35);
