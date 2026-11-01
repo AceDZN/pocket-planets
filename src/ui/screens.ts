@@ -45,7 +45,7 @@ export function mapOverlay(levels: LevelDef[], save: Save, cur: number, h: MapHa
       <div class="tabs">${WORLD_TABS.map((w) => `<button class="tab card ${w.n === curDef.worldNo ? 'on' : ''}" data-w="${w.n}"><span class="dot" style="background:${w.dot}"></span>${w.he}</button>`).join('')}</div>
     </div>
     <div class="node-labels"></div>
-    <div class="ls-info card"><div>${cur}. ${curDef.hideName && !save.atlas[cur] ? '???' : curDef.titleHe}</div><div class="sk">${curDef.skillHe}</div></div>
+    <div class="ls-info card"><div>${cur}. ${curDef.hideName && !save.atlas[cur] ? (curDef.publicTitleHe ?? '???') : curDef.titleHe}</div><div class="sk">${curDef.skillHe}</div></div>
     <button class="btn ls-play">שחקו ▶</button>
     <button class="ls-atlas card"><span class="book">📖</span>אטלס</button>
     <button class="ls-daily card">☄️ השביט היומי</button>
@@ -103,7 +103,7 @@ export function atlasPanel(levels: LevelDef[], save: Save, onClose: () => void):
     <h2>האטלס של נורי</h2>
     <div class="atlas-grid">${levels.map((d) => save.atlas[d.n]
       ? `<div class="apage got"><h4>${d.n}. ${d.titleHe}</h4>${d.atlasHe}${d.extraHe ? `<div style="margin-top:4px;color:#6a4a10"><b>העשרה:</b> ${d.extraHe}</div>` : ''}</div>`
-      : `<div class="apage no"><h4>${d.n}. ${d.hideName ? '???' : d.titleHe}</h4>הדף עוד חסר…</div>`).join('')}</div>
+      : `<div class="apage no"><h4>${d.n}. ${d.hideName ? (d.publicTitleHe ?? '???') : d.titleHe}</h4>הדף עוד חסר…</div>`).join('')}</div>
     <button class="btn" data-a="close">סגירה</button>
   </div></div>`);
   s.querySelector('[data-a="close"]')!.addEventListener('click', onClose);

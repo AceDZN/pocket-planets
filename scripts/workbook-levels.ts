@@ -21,6 +21,6 @@ Module paths come only from \`acedzn-tools/packages/catalog-geography/src\` (\`i
 |---|---|---|---|
 `;
 
-const rows = LEVELS.map((l) => `| ${l.n} | ${l.titleHe} | ${l.skillHe} | ${l.modules.join(', ')} |`).join('\n');
+const rows = LEVELS.map((l) => `| ${l.n} | ${l.hideName ? (l.publicTitleHe ?? l.titleHe) : l.titleHe} | ${l.skillHe} | ${l.modules.join(', ')} |`).join('\n');
 writeFileSync('workbook/LEVELS.md', head + rows + '\n');
 console.log(`workbook/LEVELS.md: ${LEVELS.length} levels`);

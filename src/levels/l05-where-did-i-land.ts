@@ -39,6 +39,7 @@ export const L05: LevelDef = {
   worldId: 'mercury',
   transfer: true,
   hideName: true,
+  publicTitleHe: 'איפה נחתתי?',
   thermo: true,
   introHe: [
     'הנחיתה הייתה קצת עקומה, והמפה נשרפה. על איזה עולם נחתתם?',

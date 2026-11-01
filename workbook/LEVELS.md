@@ -18,7 +18,7 @@ Module paths come only from `acedzn-tools/packages/catalog-geography/src` (`ids.
 | 2 | כספית, צד יום וצד לילה | אין אטמוספרה: יום לוהט, לילה קפוא, צל מקרר | grade-8/chapter-1/solar-system |
 | 3 | נוגה הלוהטת | אטמוספרה עבה: חממה, נפילה איטית | grade-8/chapter-1/solar-system, grade-8/chapter-1/earth-system |
 | 4 | מאדים האדום | כבידה חלשה, אוויר דליל, סופת אבק | grade-8/chapter-1/solar-system, grade-8/chapter-1/space-exploration |
-| 5 | כספית | זיהוי עולם לפי עדויות: אוויר, שמיים, שמש, חום | grade-8/chapter-1/solar-system |
+| 5 | איפה נחתתי? | זיהוי עולם לפי עדויות: אוויר, שמיים, שמש, חום | grade-8/chapter-1/solar-system |
 | 6 | ארבע הספרות | ארבע הספרות ויחסי גומלין | grade-8/chapter-1/earth-system |
 | 7 | הגינה הנודדת | תנאים לקיום חיים | grade-8/chapter-1/solar-system, grade-8/chapter-1/earth-system |
 | 8 | שרשרת בין הספרות | יחסי גומלין בין הספרות | grade-8/chapter-1/earth-system |

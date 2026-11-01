@@ -140,6 +140,8 @@ export interface LevelDef {
   thermo?: boolean;
   /** Hide the world name in the HUD until the level is won. */
   hideName?: boolean;
+  /** Spoiler-free title for catalogs and the locked atlas when the real title is the answer (hideName levels). */
+  publicTitleHe?: string;
   noHints?: boolean;
   introHe: string[];
   objectiveHe: string;
