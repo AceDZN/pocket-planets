@@ -16,6 +16,24 @@ same keys a player does). Captures live in the git-ignored `scratch/shots/` and 
 | Star crumbs | A dotted arc of stars leading to the page | Separate glowing crumbs along the route, no dotted trail | Kept: the trail would show the route and remove the "how high can I jump here?" question. |
 | Sky | Black sky, small bright Sun | Black sky (no air), Sun sized 1/AU | Matches. |
 
+## 02 · Core action (Mercury, level 2)
+
+| | Target | Actual (`scratch/shots/l2-mid.png`, `l2-c.png`) | Action |
+|---|---|---|---|
+| Camera | Behind Nuri, the twilight road running ahead, frozen night side on the left and scorched day side on the right | On this 14 m world a hill between camera and Nuri hid him | Occlusion pull-in: the camera now moves in to just short of any planet, hill or ledge that blocks the line to Nuri. **Fixed.** |
+| Sun | Huge, top-right, flaring | Large glowing Sun (5°/AU, so 2.5× the Moon level's) | Matches in spirit; ours is a glow sprite, not a textured flare. |
+| Day/night ground | Frost and ice crystals on the night side, glowing hot rock on the day side | Day/night paint on the planet plus shade from rocks; the "צד היום: היעזרו בצל" sign | Partial. The split is readable through colour **and** the suit thermometer, the °C readout and the sign, never colour alone. Ice crystals on the night side would add to it (follow-up). |
+| HUD | Jump gauge "פי 2.6" above a thermometer | Same order and labels; the thermometer shows the live °C under the snowflake | Matches. |
+| Objective | "רוצו בפס הדמדומים והסתתרו בצל" | "רוצו לאורך רצועת הדמדומים אל דף האטלס שעל הצוק בצפון" | Same idea, Workbook-style wording. |
+
+## 03 · Failure (Jupiter, level 11)
+
+| | Target | Actual (`scratch/shots/l11-mid.png`) | Action |
+|---|---|---|---|
+| Framing | Nuri tumbling into Jupiter's bands, two icy moons, checkpoint ring with a dotted return arc | Mid-leap between Io and Europa the camera pulls far back: both moons, the page tower and Jupiter's bands fill the frame | Matches the toy-solar-system read. |
+| Failure | Long fall into the clouds, the comet laughing, "אין לצדק קרקע!" | A miss falls into the clouds; Nuri plays the flailing `scared` loop after 1.6 s of falling, then a cloud-fall respawn at the last checkpoint with a toast | Matches, minus the dotted return arc (the respawn is a cut). |
+| Thermometer | — | −130 °C with the suit meter; heaters at the landings | Extra. |
+
 ## 04 · Level select
 
 | | Target | Actual (`scratch/shots/map5.png`) | Action |
