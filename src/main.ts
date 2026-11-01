@@ -354,7 +354,8 @@ function updateMapLabels(): void {
   labels.forEach((lab) => {
     const n = Number(lab.dataset.n);
     const p = map!.nodes[n - 1].clone();
-    p.y += n === 11 || n === 12 ? 1.9 : 1.3;
+    // the badge hangs under its world, so Nuri can stand on top of the current one (visual target 04)
+    p.y -= n === 11 || n === 12 ? 1.5 : 1.05;
     p.project(map!.camera);
     lab.style.left = `${((p.x + 1) / 2) * w}px`;
     lab.style.top = `${((1 - p.y) / 2) * h}px`;

@@ -67,11 +67,12 @@ export function buildMap(levels: LevelDef[]): MapView {
     scene.add(n);
   }
   // the Sun at the right edge
-  const sun = new THREE.Mesh(new THREE.SphereGeometry(10, 48, 32), new THREE.MeshBasicMaterial({ color: '#ffb540' }));
+  const sun = new THREE.Mesh(new THREE.SphereGeometry(10, 48, 32), new THREE.MeshBasicMaterial({ map: bandTexture(['#ffd060', '#ff9a20', '#ffe080', '#ff7a10', '#ffc040'], 11) }));
+  sun.userData.spin = 0.03;
   sun.position.set(38, -2, -6);
   scene.add(sun);
   const corona = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(255,170,60,0.9)'), blending: THREE.AdditiveBlending, depthWrite: false }));
-  corona.scale.setScalar(44);
+  corona.scale.setScalar(52);
   corona.position.copy(sun.position);
   scene.add(corona);
   // the galaxy at the far left
@@ -111,9 +112,14 @@ export function buildMap(levels: LevelDef[]): MapView {
 
   const marker = makeModel('nuri', 1.4);
   scene.add(marker);
-  const comet = makeModel('comet', 2.2);
-  comet.position.set(4, 7.5, 2);
-  comet.rotation.y = -0.6;
+  const comet = makeModel('comet', 2.8);
+  comet.position.set(4, 4.6, 4);
+  comet.rotation.y = -0.35;
+  // a key light of its own so Shvitton's face reads against the dark sky
+  const cometKey = new THREE.SpotLight('#fff4e0', 60, 14, 0.5, 0.6);
+  cometKey.position.set(0, 1.5, 6);
+  cometKey.target = comet;
+  comet.add(cometKey);
   scene.add(comet);
 
   let focusX = 14, t = 0, cur = 1;
@@ -132,11 +138,12 @@ export function buildMap(levels: LevelDef[]): MapView {
       camera.lookAt(camera.position.x, 0.5, 0);
       for (const o of scene.children) if (o.userData.spin) o.rotation.y += dt * o.userData.spin;
       const p = nodes[cur - 1];
-      marker.position.set(p.x, p.y + 1.15 + Math.abs(Math.sin(t * 3)) * 0.25, p.z);
+      marker.position.set(p.x, p.y + 0.8 + Math.abs(Math.sin(t * 3)) * 0.2, p.z);
       marker.rotation.y = Math.sin(t) * 0.4;
       marker.userData.mixer?.update(dt);
-      comet.position.y = 7.5 + Math.sin(t * 1.3) * 0.4;
-      comet.position.x = camera.position.x - 6 + Math.sin(t * 0.4) * 2;
+      // Shvitton hovers in the upper middle of the frame, mocking, with the stolen page (visual target 04)
+      comet.position.y = 2.9 + Math.sin(t * 1.3) * 0.35;
+      comet.position.x = camera.position.x + 3 + Math.sin(t * 0.4) * 1.5;
       comet.userData.tick?.(t, dt);
     },
   };
