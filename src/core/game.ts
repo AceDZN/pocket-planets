@@ -39,6 +39,8 @@ export interface LevelRun {
   choice: string | null;
   life: LifeCheck | null;
   paused: boolean;
+  objective: string;
+  revealed: string | null;
 }
 
 export const PAD_CHARGE = 0.7;
@@ -50,6 +52,7 @@ export function startLevel(def: LevelDef): LevelRun {
     def, parts, sim, status: 'play', pageTaken: false, crumbs: parts.crumbs.map(() => false), meter: 0,
     heat: { c: 20, sun: 1, shade: false, zone: null }, respawns: 0, hintsUsed: 0, wrongPads: 0, padCharge: {},
     usedSwitches: new Set(), toasts: [], log: [], events: [], state: {}, vars: {}, wonAt: 0, choice: null, life: null, paused: false,
+    objective: def.objectiveHe, revealed: null,
   };
   sim.player.checkpoint = { pos: clone(parts.spawn.pos), up: clone(parts.spawn.up) };
   def.script?.init?.(api(run));
@@ -83,6 +86,13 @@ function api(run: LevelRun): ScriptApi {
     player: { pos: p.pos, up: p.up, grounded: p.grounded, carrying: p.carrying, bodyWorld: g.body?.world ?? null },
     props: run.sim.props,
     vars: run.vars,
+    emit: (type, at, id) => run.events.push({ type, at, id }),
+    life: (at) => lifeCheck(run.sim, currentWorld(run), at, temperatureAt(run.sim, WORLDS[currentWorld(run)], at, p.up, run.parts.sunDir).c),
+    respawn: () => { run.respawns++; respawn(run.sim); run.events.push({ type: 'respawn' }); },
+    hop: (to) => { hop(run, to); setCheckpoint(run, to); },
+    objective: (he) => { run.objective = he; run.events.push({ type: 'objective', he }); },
+    revealName: (he) => { run.revealed = he; run.events.push({ type: 'reveal', he }); },
+    tempC: run.heat.c,
   };
 }
 
@@ -150,8 +160,9 @@ function onPhys(run: LevelRun, e: PhysEvent): void {
     logLearn(run, 'fall', 'gas-giant');
   } else if (e.type === 'lost') {
     run.respawns++;
-    say(run, 'עפתם לחלל! הכבידה החלשה לא החזירה אתכם. חזרה לנקודת הביקורת.', 'oops');
-    logLearn(run, 'fall', 'lost-in-space');
+    const kz = e.id ? run.sim.zones.find((z) => z.id === e.id && z.kind === 'kill') : undefined;
+    say(run, kz?.sayHe ?? 'עפתם לחלל! הכבידה החלשה לא החזירה אתכם. חזרה לנקודת הביקורת.', 'oops');
+    logLearn(run, 'fall', kz ? `zone:${kz.id}` : 'lost-in-space');
   } else if (e.type === 'too-heavy') {
     say(run, 'כבד מדי כאן! על עולם עם כבידה חלשה יותר זה היה קל.', 'oops');
     logLearn(run, 'lift', 'too-heavy', Math.round((e.apex ?? 0) * 10) / 10);
@@ -281,7 +292,7 @@ export function describe(run: LevelRun): Record<string, unknown> {
     world: wid,
     worldHe: w.he,
     status: run.status,
-    objective: run.def.objectiveHe,
+    objective: run.objective,
     gravityFactor: gf,
     realGravity: w.g,
     fullJumpApex: r2(jumpApex(gf)),

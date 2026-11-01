@@ -1,4 +1,21 @@
 import type { LevelDef } from '../core/level';
 import { L01 } from './l01-moon';
+import { L02 } from './l02-mercury-day-night';
+import { L03 } from './l03-venus-greenhouse';
+import { L04 } from './l04-mars-red';
+import { L05 } from './l05-where-did-i-land';
+import { L06 } from './l06-four-spheres';
+import { L07 } from './l07-wandering-garden';
+import { L08 } from './l08-sphere-chain';
+import { L09 } from './l09-missing-sphere';
+import { L10 } from './l10-asteroid-belt';
+import { L11 } from './l11-jupiter-no-ground';
+import { L12 } from './l12-saturn-rings';
+import { L13 } from './l13-cold-and-far';
+import { L14 } from './l14-rocky-or-gas';
+import { L15 } from './l15-satellite-orbit';
+import { L16 } from './l16-late-light';
+import { L17 } from './l17-scale-steps';
+import { L18 } from './l18-grand-journey';
 
-export const LEVELS: LevelDef[] = [L01];
+export const LEVELS: LevelDef[] = [L01, L02, L03, L04, L05, L06, L07, L08, L09, L10, L11, L12, L13, L14, L15, L16, L17, L18];

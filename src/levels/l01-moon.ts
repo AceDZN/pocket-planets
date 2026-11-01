@@ -44,6 +44,7 @@ export const L01: LevelDef = {
       pads: [],
       switches: [],
       sunDir: norm(fromLatLon(25, 20)),
+      sky: [{ kind: 'earth', dir: fromLatLon(35, 60), sizeDeg: 30 }],
       decor: [
         { model: 'crater', pos: surf(M.center, M.radius, -20, -25).pos, up: surf(M.center, M.radius, -20, -25).up, size: 5 },
         { model: 'crater', pos: surf(M.center, M.radius, 30, 70).pos, up: surf(M.center, M.radius, 30, 70).up, size: 7 },

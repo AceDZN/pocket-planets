@@ -73,7 +73,14 @@ export interface LevelParts {
   sunDir: V3;
   /** Decorative placements for the renderer: Tripo props, signs, labels. Never colliders. */
   decor: Decor[];
+  /** Surface paint patches (oceans, ice caps, deserts, lava) for the renderer and for zone placement. */
+  paint?: Paint[];
+  /** Big bodies hanging in the sky (Earth from the Moon, Jupiter from its moons…). */
+  sky?: SkyBody[];
 }
+
+export interface Paint { body: string; lat: number; lon: number; deg: number; color: string; kind?: 'water' | 'ice' | 'grass' | 'sand' | 'lava' | 'dust'; when?: string; unless?: string }
+export interface SkyBody { kind: 'earth' | 'jupiter' | 'saturn' | 'uranus' | 'neptune' | 'mars' | 'moon' | 'galaxy' | 'cluster'; dir: V3; sizeDeg: number }
 
 export interface Decor {
   model: string;
@@ -99,6 +106,20 @@ export interface ScriptApi {
   props: Prop[];
   /** Water/sea level offsets etc. the renderer reads. */
   vars: Record<string, number>;
+  /** Emit a game event (audio / fx / HUD hooks: 'bloom', 'wilt', 'burn', 'reveal'…). */
+  emit(type: string, at?: V3, id?: string): void;
+  /** Can a seed pod bloom here? (Workbook's conditions for life.) */
+  life(at: V3): { ok: boolean; have: Record<string, boolean>; reasonHe: string };
+  /** Send Nuri back to the last checkpoint (counts as a retry). */
+  respawn(): void;
+  /** Hop Nuri to a spot (launch-pad cinematic) and make it the checkpoint. */
+  hop(to: Spot): void;
+  /** Set the HUD objective line. */
+  objective(he: string): void;
+  /** Reveal the hidden world name (transfer levels). */
+  revealName(he: string): void;
+  /** Current temperature where Nuri stands, °C. */
+  tempC: number;
 }
 
 export interface LevelScript {
@@ -115,6 +136,8 @@ export interface LevelDef {
   /** The main body's world profile id (for the atlas and the sky). */
   worldId: string;
   transfer?: boolean;
+  /** Show the thermometer from the start (heat or cold matters here). */
+  thermo?: boolean;
   /** Hide the world name in the HUD until the level is won. */
   hideName?: boolean;
   noHints?: boolean;

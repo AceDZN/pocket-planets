@@ -107,7 +107,7 @@ export function solve(def: LevelDef, route: RouteStep[] = def.route, maxT = def.
   while (t < maxT && run.status !== 'won' && !bot.failed) {
     tick(run, botInput(run, route, bot, dt), dt);
     t += dt;
-    if (bot.i >= route.length && run.status !== 'won') { bot.failed = 'route ended without a win'; break; }
+    if (bot.i >= route.length && (run.status as string) !== 'won') { bot.failed = 'route ended without a win'; break; }
   }
   return { won: run.status === 'won', t, failed: bot.failed, respawns: run.respawns, stars: run.crumbs.filter(Boolean).length, step: bot.i };
 }

@@ -74,6 +74,8 @@ export interface Zone {
   phase?: number;
   when?: string;
   unless?: string;
+  /** kill zones: the toast shown when Nuri falls in (water, lava, the Sun…). */
+  sayHe?: string;
 }
 
 export interface Prop {
@@ -128,7 +130,7 @@ export interface Player {
 }
 
 export interface PhysEvent {
-  type: 'jump' | 'puff' | 'land' | 'pound' | 'pound-land' | 'launch' | 'cloud-fall' | 'lost' | 'pickup' | 'too-heavy' | 'throw' | 'drop' | 'bump';
+  type: 'jump' | 'puff' | 'land' | 'pound' | 'pound-land' | 'launch' | 'cloud-fall' | 'lost' | 'pickup' | 'too-heavy' | 'throw' | 'drop' | 'bump' | 'burn';
   at: V3;
   apex?: number;
   id?: string;
@@ -295,7 +297,7 @@ export function boxContact(p: V3, r: number, c: V3, half: V3, axes: [V3, V3, V3]
 export function contacts(sim: Sim, p: V3, r: number, dt: number): Contact[] {
   const out: Contact[] = [];
   for (const b of sim.bodies) {
-    if (b.kind !== 'sphere') continue;
+    if (b.kind !== 'sphere' && !(b.kind === 'gas' && sim.flags.has('skimmer'))) continue;
     const c = bodyCenter(sim, b);
     const k = sphereContact(p, r, c, b.radius);
     if (k) {
@@ -369,7 +371,7 @@ function stepPlayer(sim: Sim, input: Input, dt: number, edges: { jump: boolean; 
   } else {
     p.lostTime = 0;
     p.bodyId = grav.body.id;
-    if (grav.body.kind === 'gas' && len(sub(p.pos, bodyCenter(sim, grav.body))) < grav.body.radius) {
+    if (grav.body.kind === 'gas' && !sim.flags.has('skimmer') && len(sub(p.pos, bodyCenter(sim, grav.body))) < grav.body.radius) {
       ev.push({ type: 'cloud-fall', at: clone(p.pos), id: grav.body.id });
       respawn(sim);
       return;
@@ -395,11 +397,25 @@ function stepPlayer(sim: Sim, input: Input, dt: number, edges: { jump: boolean; 
   vt = dvl > maxDv ? addScaled(vt, dv, maxDv / dvl) : target;
   if (!p.grounded) vt = scale(vt, Math.exp(-AIR_DRAG[grav.air] * dt * 0.5));
 
+  // moving debris knocks you back
+  for (const pr of sim.props) {
+    if (pr.kind !== 'debris' || !pr.alive || pr.carried) continue;
+    const d = sub(p.pos, pr.pos);
+    const l = len(d);
+    if (l < PLAYER_R + pr.radius && l > 1e-6) {
+      const n = scale(d, 1 / l);
+      p.vel = add(addScaled(p.vel, n, 7), scale(up, 4));
+      p.pos = addScaled(pr.pos, n, PLAYER_R + pr.radius + 0.05);
+      p.grounded = false;
+      ev.push({ type: 'bump', at: clone(p.pos), id: pr.id });
+    }
+  }
   // zones that push
   for (const z of sim.zones) {
     if (!active(sim, z)) continue;
     const zc = zoneCenter(sim, z);
     if (len(sub(p.pos, zc)) > z.radius) continue;
+    if (z.kind === 'kill') { ev.push({ type: 'lost', at: clone(p.pos), id: z.id }); respawn(sim); return; }
     if (z.kind === 'updraft' && zoneOpen(z, sim.t)) vn += (z.power ?? 30) * dt;
     if (z.kind === 'wind' && z.dir) vt = addScaled(vt, tangent(z.dir, up), (z.power ?? 3) * dt);
     if (z.kind === 'launch' && zoneOpen(z, sim.t) && vn < (z.power ?? 12) * 0.6) {
@@ -490,10 +506,10 @@ function stepPlayer(sim: Sim, input: Input, dt: number, edges: { jump: boolean; 
       p.carrying = null;
       ev.push({ type: 'throw', at: clone(p.pos), id: pr.id });
     } else {
-      const near = sim.props.find((x) => x.alive && !x.carried && x.kind !== 'debris' && len(sub(x.pos, p.pos)) < 1.4 + x.radius);
+      const near = sim.props.find((x) => x.alive && !x.carried && len(sub(x.pos, p.pos)) < 1.4 + x.radius);
       if (near) {
         const weight = near.mass * (g / G_EARTH);
-        if (weight <= LIFT_LIMIT) { near.carried = true; p.carrying = near.id; ev.push({ type: 'pickup', at: clone(p.pos), id: near.id }); }
+        if (weight <= LIFT_LIMIT) { near.carried = true; near.motion = undefined; p.carrying = near.id; ev.push({ type: 'pickup', at: clone(p.pos), id: near.id }); }
         else ev.push({ type: 'too-heavy', at: clone(p.pos), id: near.id, apex: weight });
       }
     }
@@ -510,6 +526,16 @@ function stepProps(sim: Sim, dt: number): void {
       continue;
     }
     if (pr.motion) { pr.pos = motionPos(pr.motion, sim.t, pr.home); continue; }
+    let burnt = false;
+    for (const z of sim.zones) {
+      if (z.kind === 'kill' && active(sim, z) && len(sub(pr.pos, zoneCenter(sim, z))) < z.radius) {
+        burnt = true;
+        if (pr.kind === 'debris' || pr.kind === 'part') { pr.alive = false; sim.events.push({ type: 'burn', at: clone(pr.pos), id: pr.id }); }
+        else { pr.pos = clone(pr.home); pr.vel = v3(); pr.resting = true; sim.events.push({ type: 'drop', at: clone(pr.pos), id: pr.id }); }
+        break;
+      }
+    }
+    if (burnt) continue;
     if (pr.resting) continue;
     const grav = gravityAt(sim, pr.pos);
     if (!grav.body) { pr.alive = pr.kind === 'debris' ? false : pr.alive; if (pr.kind !== 'debris') { pr.pos = clone(pr.home); pr.vel = v3(); } continue; }
