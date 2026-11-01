@@ -45,7 +45,7 @@ export const L01: LevelDef = {
       switches: [],
       sunDir: norm(fromLatLon(25, 20)),
       // Earth hangs low behind the crater rim, in frame from the very first jump (visual target 01)
-      sky: [{ kind: 'earth', dir: fromLatLon(14, 70), sizeDeg: 34 }],
+      sky: [{ kind: 'earth', dir: fromLatLon(8, 78), sizeDeg: 36 }],
       decor: [
         { model: 'crater', pos: surf(M.center, M.radius, -20, -25).pos, up: surf(M.center, M.radius, -20, -25).up, size: 5 },
         { model: 'crater', pos: surf(M.center, M.radius, 30, 70).pos, up: surf(M.center, M.radius, 30, 70).up, size: 7 },

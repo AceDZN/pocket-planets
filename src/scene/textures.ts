@@ -100,26 +100,36 @@ export function bandTexture(colors: string[], seed = 3, w = 512, h = 256): THREE
 }
 
 /** Earth-like texture for the Earth in the Moon's sky and the tiny Earths. */
-export function earthTexture(w = 512, h = 256): THREE.Texture {
+export function earthTexture(w = 1024, h = 512): THREE.Texture {
   if (cache.has('earth')) return cache.get('earth')!;
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d')!;
   const img = g.createImageData(w, h);
+  const mix = (a: number, b: number, k: number) => a + (b - a) * Math.max(0, Math.min(1, k));
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
     const lat = Math.abs(y / h - 0.5) * 2;
-    const land = fbm((x / w) * 6, (y / h) * 3, 11, 6);
-    const cloud = fbm((x / w) * 12, (y / h) * 6, 23, 12);
-    let r = 30, gg = 90, b = 190;
-    if (land > 0.53) { r = 70 + land * 90; gg = 130 + land * 40; b = 60; if (lat < 0.35 && land > 0.6) { r = 200; gg = 170; b = 100; } }
-    if (lat > 0.82) { r = gg = b = 240; }
-    if (cloud > 0.6) { const k = Math.min(1, (cloud - 0.6) * 4); r += (255 - r) * k; gg += (255 - gg) * k; b += (255 - b) * k; }
+    // large continents plus finer coastline detail, so the Earth in the Moon's sky stays crisp at 30°+
+    const land = fbm((x / w) * 6, (y / h) * 3, 11, 6) * 0.78 + fbm((x / w) * 32, (y / h) * 16, 7, 32) * 0.22;
+    const cloud = fbm((x / w) * 12, (y / h) * 6, 23, 12) * 0.7 + fbm((x / w) * 48, (y / h) * 24, 5, 48) * 0.3;
+    const depth = Math.max(0, 0.53 - land) / 0.2;
+    let r = mix(70, 18, depth), gg = mix(150, 60, depth), b = mix(220, 160, depth);
+    if (land > 0.53) {
+      const k = (land - 0.53) / 0.2;
+      const dry = lat < 0.4 ? Math.max(0, (land - 0.58) / 0.08) : 0;
+      r = mix(mix(70, 120, k), 205, dry); gg = mix(mix(140, 120, k), 175, dry); b = mix(mix(60, 70, k), 110, dry);
+    }
+    const ice = Math.max(0, (lat - 0.8) / 0.06);
+    r = mix(r, 240, ice); gg = mix(gg, 244, ice); b = mix(b, 250, ice);
+    const ck = Math.max(0, Math.min(1, (cloud - 0.55) * 4));
+    r = mix(r, 255, ck * 0.9); gg = mix(gg, 255, ck * 0.9); b = mix(b, 255, ck * 0.9);
     const i = (y * w + x) * 4;
     img.data[i] = r; img.data[i + 1] = gg; img.data[i + 2] = b; img.data[i + 3] = 255;
   }
   g.putImageData(img, 0, 0);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
   cache.set('earth', t);
   return t;
 }
