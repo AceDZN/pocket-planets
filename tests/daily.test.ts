@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels/index';
-import { dailyKey, dailyPlan, mysteryDef, distinguishable, guessFeedbackHe, dailyStreak } from '../src/core/daily';
+import { dailyKey, dailyPlan, mysteryDef, distinguishable, guessFeedbackHe, dailyStreak, leaks, withPrep, dailyEligible } from '../src/core/daily';
 import { solve } from '../src/core/bot';
 import { WORLDS } from '../src/core/worlds';
 
@@ -56,4 +56,18 @@ test('streak counts consecutive days ending today or yesterday', () => {
   assert.equal(dailyStreak({ '2026-11-10': 5, '2026-11-09': 3, '2026-11-07': 1 }, today), 2);
   assert.equal(dailyStreak({ '2026-11-09': 3, '2026-11-08': 3 }, today), 2);
   assert.equal(dailyStreak({ '2026-11-05': 3 }, today), 0);
+});
+
+test('no daily level shows a world name in its objective, hints or signs once scrubbed', () => {
+  for (const l of dailyEligible(LEVELS)) assert.equal(leaks(l), false, `L${l.n}`);
+  assert.ok(new Set(dailyEligible(LEVELS).map((l) => l.worldId)).size >= 5, 'enough worlds left to vary the run');
+});
+
+test('Hebrew prepositions merge with the article: בירח, לירח, מהעולם הזה', () => {
+  assert.equal(withPrep('ב', 'הירח'), 'בירח');
+  assert.equal(withPrep('ל', 'הירח'), 'לירח');
+  assert.equal(withPrep('ב', 'מאדים'), 'במאדים');
+  const m = mysteryDef({ ...LEVELS[9], objectiveHe: 'דלגו מאסטרואיד לאסטרואיד' });
+  assert.equal(m.objectiveHe, 'דלגו מהעולם הזה לעולם הזה');
+  assert.doesNotMatch(guessFeedbackHe('mars', 'moon'), /בהירח|להירח/);
 });

@@ -43,7 +43,7 @@ Every level is checked by the route bot with the real physics: `npx tsx scripts/
 
 ## L7 · הגינה הנודדת (`l07-wandering-garden.ts`)
 
-**What it teaches:** The conditions for life: air (אטמוספרה), liquid water (הידרוספרה), a pleasant temperature and soil. Earth is the only place in the Solar System where all four exist together. Modules `solar-system` and `earth-system`. The suit thermometer is on.
+**What it teaches:** Workbook's three conditions for life: an atmosphere that supports life, liquid water (הידרוספרה) and a suitable temperature. Earth is the only place in the Solar System where all three exist together. After the playtest the pod "wants to compare": it blooms on the riverbank only after it has wilted in two other places, so the comparison is the level, not an option. Modules `solar-system` and `earth-system`. The suit thermometer is on.
 
 **Misconception checked:** "Any ground will do" and "the Moon, Mars and נוגה are like Earth."
 
@@ -193,6 +193,7 @@ Bringing the nearest capsule (atmo) every time never wins. A capsule thrown from
 - Speed C=3 units/s, a pulse every 6 s, each tile lit for 2.6 s.
 - Warp pads fly out to each star. You ride the light home.
 - The Andromeda star is already dead: a crystal and rock with a cloud. Reaching it gives a toast: "it's gone, yet its light is still travelling."
+- After the playtest, the answer pads light up only after riding the light home from two stars (flag `compared`), so the answer cannot be guessed from the spawn.
 
 **Verified solution:**
 1. Hub crumb (puff).

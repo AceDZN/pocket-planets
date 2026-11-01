@@ -5,7 +5,7 @@ import type { Body, Box, Zone } from '../core/physics';
 // טבעות שבתאי: chunks of ice and rock floating in the ring plane. Gravity pulls toward the plane from either side, so
 // you can stand on top of a chunk or on its underside, and a fall through a gap just bobs you back. The pull is tiny
 // (floored for play): taps carry you far. Inside the ring's inner edge שבתאי itself takes over: a long cloud fall.
-// At the outer edge waits אנצלדוס, whose ice geyser throws you up to the page.
+// At the outer edge waits אנצ׳לדוס, whose ice geyser throws you up to the page.
 
 const SAT = { c: v3(0, 0, 0), r: 18 };
 const RING = { inner: 25, outer: 60 };
@@ -25,7 +25,7 @@ const CHUNKS: Chunk[] = [
 const chunk = (id: string) => CHUNKS.find((k) => k.id === id)!;
 const top = (k: Chunk, lift = 0.4): Spot => ({ pos: polar(k.rho, k.deg, H / 2 + lift), up: v3(0, 1, 0) });
 
-/** אנצלדוס: just outside the rings, a little below their plane. */
+/** אנצ׳לדוס: just outside the rings, a little below their plane. */
 const ENC = { c: polar(65, 60, -7), r: 4 };
 const encTop = (alt: number): V3 => v3(ENC.c.x, ENC.c.y + ENC.r + alt, ENC.c.z);
 
@@ -38,15 +38,15 @@ export const L12: LevelDef = {
   thermo: true,
   introHe: [
     'שבתאי הוא כוכב לכת גזי, וסביבו טבעות של גושי קרח וסלע שמקיפים אותו.',
-    'הכבידה של הטבעת מושכת אל המישור שלה, מלמעלה וגם מלמטה. דלגו מגוש לגוש החוצה, אל הירח אנצלדוס. אל תיפלו פנימה, אל שבתאי!',
+    'במשחק הזה, גושי הטבעת מושכים אתכם אל המישור שלה, מלמעלה וגם מלמטה. דלגו מגוש לגוש החוצה, אל הירח אנצ׳לדוס. אל תיפלו פנימה, אל שבתאי!',
   ],
-  objectiveHe: 'דלגו על גושי הטבעת החוצה אל אנצלדוס, ותנו לגייזר לזרוק אתכם אל הדף',
+  objectiveHe: 'דלגו על גושי הטבעת החוצה אל אנצ׳לדוס, ותנו לגייזר לזרוק אתכם אל הדף',
   hintsHe: [
     'הכבידה כאן חלשה מאוד: לחיצה קצרה על רווח מספיקה כדי לעבור לגוש הבא.',
     'נפלתם בין הגושים? הכבידה מושכת אל מישור הטבעת, אז תתנדנדו חזרה. אפשר גם לעמוד מתחת לגוש!',
     'קר מאוד ליד שבתאי. עצרו ליד משואות החימום הכתומות.',
   ],
-  atlasHe: 'שבתאי הוא כוכב לכת גזי, ידוע בטבעות שלו: מיליוני גושי קרח וסלע שמקיפים אותו. לשבתאי אין פני שטח מוצקים. לירח שלו אנצלדוס יש מים נוזליים מתחת לקרח, שפורצים החוצה בסדקים, ולכן מדענים מחפשים בו תנאים לחיים.',
+  atlasHe: 'שבתאי הוא כוכב לכת גזי, ידוע בטבעות שלו: מיליוני גושי קרח וסלע שמקיפים אותו. לשבתאי אין פני שטח מוצקים. לירח שלו אנצ׳לדוס יש מים נוזליים מתחת לקרח, שפורצים החוצה בסדקים, ולכן מדענים מחפשים בו תנאים לחיים.',
   extraHe: 'לפי נאס"א: הטבעות רחבות מאוד, כ-280,000 ק"מ, אבל דקות מאוד, לרוב פחות מקילומטר. שבתאי רחוק מהשמש פי 9.5 בערך מכדור הארץ, ושנה בו נמשכת כ-29.5 שנות ארץ.',
   skillHe: 'כוכב לכת גזי, טבעות, מים מתחת לקרח',
   modules: ['grade-8/chapter-1/solar-system'],
@@ -108,7 +108,7 @@ export const L12: LevelDef = {
     event(api, ev) {
       if (ev.type === 'launch' && ev.id === 'geyser' && !api.state.geyserSaid) {
         api.state.geyserSaid = true;
-        api.say('ששש! מים מהאוקיינוס שמתחת לקרח של אנצלדוס פורצים החוצה וזורקים אתכם למעלה.', 'good');
+        api.say('ששש! מים מהאוקיינוס שמתחת לקרח של אנצ׳לדוס פורצים החוצה וזורקים אתכם למעלה.', 'good');
       }
     },
   },

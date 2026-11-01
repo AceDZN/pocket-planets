@@ -28,12 +28,27 @@ function seedOf(key: string): number {
   return h >>> 0;
 }
 
-/** Worlds a player can tell apart by feel: a single named body they stand on (not a gas giant), not the artificial or cosmic stages. */
+/** Worlds a player can tell apart by feel: a single named body they stand on (not a gas giant), not the artificial or
+ *  cosmic stages, and whose text gives away no world name once the level's own world is scrubbed. */
 export function dailyEligible(levels: LevelDef[]): LevelDef[] {
   return levels.filter((l) => {
     const w = WORLDS[l.worldId];
-    return w && w.surface && !l.transfer && !l.hideName && w.kind !== 'artificial' && w.kind !== 'cosmic' && l.n !== levels.length;
+    return w && w.surface && !l.transfer && !l.hideName && w.kind !== 'artificial' && w.kind !== 'cosmic' && l.n !== levels.length && !leaks(l);
   });
+}
+
+/** Every world name a scrubbed daily level could still show (another planet next door names the region). */
+const NAMES = Object.values(WORLDS).filter((w) => w.kind !== 'artificial' && w.kind !== 'cosmic').map((w) => w.he.replace(/^ה/, ''));
+
+/** Text a player reads in a level: objective, hints and sign labels. */
+function shownText(def: LevelDef): string[] {
+  return [def.objectiveHe, ...def.hintsHe, ...def.build().decor.map((d) => d.label ?? '')];
+}
+
+/** Does the scrubbed level still name a world? */
+export function leaks(def: LevelDef): boolean {
+  const m = mysteryDef(def);
+  return shownText(m).some((t) => NAMES.some((n) => t.includes(n)));
 }
 
 const GUESSABLE = ['moon', 'mercury', 'venus', 'earth', 'mars', 'asteroid', 'europa', 'io', 'ganymede', 'ring', 'enceladus', 'triton', 'miranda'];
@@ -64,12 +79,17 @@ export function dailyPlan(key: string, levels: LevelDef[]): DailyPlan {
   return { key, stages };
 }
 
-/** The level as played in the daily run: name hidden, jump number hidden, the world's name scrubbed from the text. */
+/** "ב" + "הירח" → "בירח": the article merges into ב/ל/כ. */
+export function withPrep(p: string, he: string): string {
+  return /^[בלכ]$/.test(p) && he.startsWith('ה') ? p + he.slice(1) : p + he;
+}
+
+/** The level as played in the daily run: name hidden, jump number hidden, the world's name scrubbed from the text and the signs. */
 export function mysteryDef(def: LevelDef): LevelDef {
   const bare = WORLDS[def.worldId].he.replace(/^ה/, '');
-  // "בירח" → "בעולם הזה", "והירח" → "והעולם הזה", "כספית" → "העולם הזה"
-  const re = new RegExp(`([בלמו]?)ה?${bare}`, 'g');
-  const scrub = (s: string) => s.replace(re, (_, p: string) => (p && p !== 'ו' ? `${p}עולם הזה` : `${p}העולם הזה`));
+  // "בירח" → "בעולם הזה", "מהירח" → "מהעולם הזה", "והירח" → "והעולם הזה", "כספית" → "העולם הזה"
+  const re = new RegExp(`([בלכמו]?)ה?${bare}`, 'g');
+  const scrub = (s: string) => s.replace(re, (_, p: string) => (/^[בלכ]$/.test(p) ? `${p}עולם הזה` : `${p}העולם הזה`));
   return {
     ...def,
     hideName: true,
@@ -77,6 +97,11 @@ export function mysteryDef(def: LevelDef): LevelDef {
     introHe: ['שביטון זרק אתכם לעולם מסתורי!', 'הרגישו את הקפיצה, הביטו בשמש ובשמיים, ומצאו את דף האטלס.', 'בסוף תצטרכו לנחש: איפה הייתם?'],
     objectiveHe: scrub(def.objectiveHe),
     hintsHe: def.hintsHe.map(scrub),
+    build() {
+      const parts = def.build();
+      parts.decor = parts.decor.map((d) => (d.label ? { ...d, label: scrub(d.label) } : d));
+      return parts;
+    },
   };
 }
 
@@ -86,9 +111,9 @@ export function guessFeedbackHe(actual: string, guess: string): string {
   const fmt = (x: number) => (x < 9.95 ? x.toFixed(1).replace(/\.0$/, '') : String(Math.round(x)));
   const ja = 1 / gameGravityFactor(A), jg = 1 / gameGravityFactor(G);
   const bits: string[] = [];
-  if (Math.max(ja, jg) / Math.min(ja, jg) > 1.35) bits.push(`ב${G.he} קופצים פי <bdi class="n">${fmt(jg)}</bdi> מכדור הארץ, וכאן קפצתם פי <bdi class="n">${fmt(ja)}</bdi>.`);
-  if (Math.max(A.au, G.au) / Math.min(A.au, G.au) > 1.8) bits.push(G.au < A.au ? `ב${G.he} השמש נראית גדולה יותר, כי שם קרובים יותר אליה.` : `ב${G.he} השמש נראית קטנה יותר, כי שם רחוקים יותר ממנה.`);
-  if (A.air !== G.air) bits.push(G.air === 'none' ? `ל${G.he} אין אוויר בכלל.` : `ל${G.he} יש אוויר${G.air === 'thick' ? ' סמיך' : G.air === 'thin' ? ' דליל' : ''}.`);
+  if (Math.max(ja, jg) / Math.min(ja, jg) > 1.35) bits.push(`${withPrep('ב', G.he)} קופצים פי <bdi class="n">${fmt(jg)}</bdi> מכדור הארץ, וכאן קפצתם פי <bdi class="n">${fmt(ja)}</bdi>.`);
+  if (Math.max(A.au, G.au) / Math.min(A.au, G.au) > 1.8) bits.push(G.au < A.au ? `${withPrep('ב', G.he)} השמש נראית גדולה יותר, כי שם קרובים יותר אליה.` : `${withPrep('ב', G.he)} השמש נראית קטנה יותר, כי שם רחוקים יותר ממנה.`);
+  if (A.air !== G.air) bits.push(G.air === 'none' ? `${withPrep('ל', G.he)} אין אוויר בכלל.` : `${withPrep('ל', G.he)} יש אוויר${G.air === 'thick' ? ' סמיך' : G.air === 'thin' ? ' דליל' : ''}.`);
   return `שביטון מתגלגל מצחוק והזנב שלו מסתבך! ${bits[0] ?? ''} ${bits[1] ?? ''} נסו שוב.`.trim();
 }
 

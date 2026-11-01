@@ -23,8 +23,9 @@ export function setInputEnabled(on: boolean): void { enabled = on; if (!on) keys
 
 export function initInput(canvas: HTMLElement, root: HTMLElement): void {
   addEventListener('keydown', (e) => {
-    if ((e.target as HTMLElement)?.tagName === 'INPUT') return;
     const c = e.code;
+    // a focused checkbox (pause menu toggles) keeps Space for itself, but Esc / P still close the menu
+    if ((e.target as HTMLElement)?.tagName === 'INPUT' && c !== 'Escape' && c !== 'KeyP') return;
     if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(c)) e.preventDefault();
     if (e.repeat) return;
     keys.add(c);

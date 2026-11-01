@@ -9,6 +9,8 @@ import { spot, decoAt, deco, pad, ride } from './lib-b';
 
 const UP = v3(0, 1, 0);
 const LADDER = ['כוכב לכת', 'מערכת כוכב', 'גלקסיה', 'צביר גלקסיות', 'היקום'];
+/** "smaller", agreeing with each rung: מערכת and גלקסיה are feminine. */
+const SMALLER = ['קטן', 'קטנה', 'קטנה', 'קטן', 'קטן'];
 const X = [0, 120, 240, 360, 480];
 const P: BodyRef = { id: 'planet', center: v3(0, 0, 0), radius: 6 };
 const PL2_PERIOD = 26;
@@ -22,7 +24,7 @@ function sizePads(stage: number, spots: Spot[], order: number[], next: Spot, bac
     const id = `s${stage}-${k}`;
     if (k === stage + 1) return pad(id, spots[i], LADDER[k], 'warp', { to: next, answer: String(k), when });
     const explainHe = k <= stage
-      ? `בוינג! קפצתם אחורה בסולם: ${LADDER[k]} קטן יותר מ${LADDER[stage]}. כל מדרגה עולה לגודל הבא. חזרה לתחילת השלב.`
+      ? `בוינג! קפצתם אחורה בסולם: ${LADDER[k]} ${SMALLER[k]} יותר מ${LADDER[stage]}. כל מדרגה עולה לגודל הבא. חזרה לתחילת השלב.`
       : `וווּפּ! דילגתם על מדרגה: בין ${LADDER[stage]} ל${LADDER[k]} יש עוד גודל באמצע. חזרה לתחילת השלב.`;
     return pad(id, spots[i], LADDER[k], 'wrong', { back, explainHe, answer: String(k), when });
   });

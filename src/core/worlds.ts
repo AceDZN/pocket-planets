@@ -51,7 +51,7 @@ export const WORLDS: Record<string, WorldProfile> = {
     spheres: { atmo: true, hydro: false, geo: false, bio: false }, yearDays: 10759, sky: 'rings' },
   ring: { id: 'ring', he: 'טבעות שבתאי', kind: 'small', g: 0.01, au: 9.5, air: 'none', dayC: -180, nightC: -200, surface: true,
     spheres: { atmo: false, hydro: false, geo: true, bio: false }, sky: 'rings' },
-  enceladus: { id: 'enceladus', he: 'אנצלדוס', kind: 'moon', g: 0.011, au: 9.5, air: 'none', dayC: -200, nightC: -220, surface: true,
+  enceladus: { id: 'enceladus', he: 'אנצ׳לדוס', kind: 'moon', g: 0.011, au: 9.5, air: 'none', dayC: -200, nightC: -220, surface: true,
     spheres: { atmo: false, hydro: true, geo: true, bio: false }, sky: 'rings' },
   uranus: { id: 'uranus', he: 'אורנוס', kind: 'gas', g: 0.9, au: 19.2, air: 'thick', dayC: -195, nightC: -195, surface: false,
     spheres: { atmo: true, hydro: false, geo: false, bio: false }, yearDays: 30687, sky: 'teal' },

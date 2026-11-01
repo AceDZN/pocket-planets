@@ -20,19 +20,18 @@ Shared helpers are in `src/levels/lib-a.ts`: `deco`, `at` (a surface Spot) and `
 
 ## L2 · כספית, צד יום וצד לילה (`l02-mercury-day-night.ts`)
 
-**Taught:** כספית has no air. The day side scorches and the night side freezes. Only the twilight band (the terminator) is livable. Shade counts as night.
+**Taught:** כספית has no air. The day side scorches and the night side freezes. Only the twilight band (the terminator) is livable. Shade under a high Sun is mild (about 60 °C on the HUD), so it cools the suit.
 
 **Misconception checked:** "the planet closest to the Sun is hot everywhere."
 
-**Solution:**
-1. Hop the scarp to the band.
-2. Run along the band on rock tops, pausing in each rock's shadow.
-3. Return round the north side.
-4. Use a puff jump to the night pillar crumb.
-5. Puff-jump onto the mesa and take the page.
+**Solution:** (after the playtest the page moved to the day side, on the "anvil" rock at lon 70 under a high Sun)
+1. Hop the scarp to the band (crumb over the scarp).
+2. Puff-jump onto the night-side pillar for its crumb, then run north along the band and puff onto the mesa (crumb).
+3. Back south down the band, then hop the four day-side rocks, cooling in each rock's shadow (west of it).
+4. From the last rock jump onto the anvil and take the page.
 
 **Wrong approaches:**
-- Cutting straight across the day side: the suit meter overheats in about 6 s, then a respawn with a joke.
+- Cutting straight across the day side: the suit heats 1.8× faster here (`heatRate`), so a straight run overheats in about 3 s, then a respawn with a joke (`tests/playtest.test.ts`).
 - Lingering on the night side: the suit freezes.
 - Earth gravity: the scarp and mesa are out of reach, and the route fails (tested).
 

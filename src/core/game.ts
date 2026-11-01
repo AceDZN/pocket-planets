@@ -176,7 +176,8 @@ function onPhys(run: LevelRun, e: PhysEvent): void {
   } else if (e.type === 'lost') {
     run.respawns++;
     const kz = e.id ? run.sim.zones.find((z) => z.id === e.id && z.kind === 'kill') : undefined;
-    say(run, kz?.sayHe ?? 'עפתם לחלל! הכבידה החלשה לא החזירה אתכם. חזרה לנקודת הביקורת.', 'oops');
+    const boots = ['artificial', 'cosmic'].includes(WORLDS[currentWorld(run)].kind);
+    say(run, kz?.sayHe ?? (boots ? 'המגפיים המגנטיים איבדו אחיזה ועפתם לחלל! חזרה לנקודת הביקורת.' : 'עפתם לחלל! הכבידה החלשה לא החזירה אתכם. חזרה לנקודת הביקורת.'), 'oops');
     logLearn(run, 'fall', kz ? `zone:${kz.id}` : 'lost-in-space');
   } else if (e.type === 'too-heavy') {
     say(run, 'כבד מדי כאן! על עולם עם כבידה חלשה יותר זה היה קל.', 'oops');

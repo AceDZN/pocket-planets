@@ -79,7 +79,7 @@ export const L03: LevelDef = {
       decor: [
         deco('ice_crystal', V, 3, 0, 0.9), deco('ice_crystal', V, 3, 36, 0.9), deco('ice_crystal', V, 3.5, 116, 0.9), deco('ice_crystal', V, 3.5, 148, 0.9),
         deco('sign', V, -4, 2, 1, { label: 'תחנת קירור ❄' }),
-        deco('sign', V, -6, 104, 1, { label: 'צד הלילה: עדיין 465°C' }),
+        deco('sign', V, -6, 104, 1, { label: 'צד הלילה: חם בדיוק כמו ביום' }),
         deco('crater', V, -30, 20, 5), deco('crater', V, 35, 80, 6), deco('crater', V, -35, 140, 5),
         deco('rock', V, 8, 25, 1), deco('rock', V, -9, 104, 1.2), deco('rock', V, 10, 140, 0.9),
         deco('cloud', V, 25, 40, 3, { yawDeg: 20 }), deco('cloud', V, -25, 110, 3), deco('cloud', V, 20, 170, 2.5),

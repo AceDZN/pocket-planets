@@ -49,6 +49,7 @@ export function mapOverlay(levels: LevelDef[], save: Save, cur: number, h: MapHa
     <button class="btn ls-play">שחקו ▶</button>
     <button class="ls-atlas card"><span class="book">📖</span>אטלס</button>
     <button class="ls-daily card">☄️ השביט היומי</button>
+    <div class="ls-note">המסלול הוא סדר השלבים, לא סדר המרחק מהשמש</div>
   </div>`);
   s.querySelector('.ls-daily')!.addEventListener('click', () => h.daily());
   s.querySelectorAll<HTMLElement>('.tab').forEach((b) => b.addEventListener('click', () => h.tab(Number(b.dataset.w))));

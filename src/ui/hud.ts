@@ -31,7 +31,7 @@ export class Hud {
       <div class="hud-tr2"><button class="round" data-a="hint" aria-label="רמז">💡</button><button class="round" data-a="atlas" aria-label="אטלס">📖</button></div>
       <div class="gauges">
         <div class="gauge jump card"><div class="lbl">מד<br>הקפיצה</div><div class="tube"><div class="fill"></div><div class="earth"></div></div><div class="val"></div></div>
-        <div class="gauge thermo card"><div class="lbl">מד חום</div><div class="ico">🔥</div><div class="tube"><div class="needle"></div></div><div class="ico">❄️</div><div class="temp"></div></div>
+        <div class="gauge thermo card"><div class="lbl">מד חום</div><div class="ico">🔥</div><div class="tube"><div class="needle"></div></div><div class="ico">❄️</div><div class="temp"></div><div class="enr" title="טמפרטורות של נאס&quot;א, לא מתוך ספר הלימוד">העשרה</div></div>
       </div>
       <div class="toasts"></div>
       <div class="objective card"><span class="arrow">⬆</span><span class="otext"></span></div>
