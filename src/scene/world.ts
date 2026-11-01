@@ -5,7 +5,7 @@ import { bodyCenter, boxCenter, ballCenter, zoneCenter, active, zoneOpen } from 
 import type { Body, Box, Ball, Zone, Prop } from '../core/physics';
 import type { Pad, Switch, Decor, Paint, Spot } from '../core/level';
 import { fromLatLon } from '../core/vec';
-import { lookFor, LOOKS, type Look } from './palette';
+import { lookFor, type Look } from './palette';
 import { rockTexture, glowTexture, bandTexture, earthTexture, labelTexture } from './textures';
 import { makeModel } from './models';
 
@@ -246,17 +246,10 @@ function padMesh(pad: Pad): THREE.Object3D {
   ring.position.y = 0.32;
   ring.name = 'charge';
   g.add(ring);
-  if (pad.answer && LOOKS[pad.answer]) {
-    // holographic preview of the world this pad stands for (as in the transfer mockup)
-    const lk = LOOKS[pad.answer];
-    const holo = new THREE.Mesh(new THREE.SphereGeometry(0.42, 28, 20), new THREE.MeshStandardMaterial({ color: lk.ground, emissive: lk.ground2, emissiveIntensity: 0.5, roughness: 0.7 }));
-    holo.position.y = 1.55;
-    holo.name = 'holo';
-    g.add(holo);
-    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.85, 2.2, 24, 1, true), new THREE.MeshBasicMaterial({ color: lk.rim, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
-    beam.position.y = 1.3;
-    g.add(beam);
-  }
+  // no planet hologram on answer pads: it would turn a reasoning choice into colour matching (see VISUAL_REVIEW.md)
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.85, 2.2, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#7af0ff', transparent: true, opacity: 0.14, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+  beam.position.y = 1.3;
+  g.add(beam);
   const { tex, aspect } = labelTexture(pad.labelHe);
   const label = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
   label.scale.set(0.62 * aspect, 0.62, 1);
